@@ -1,12 +1,21 @@
 import os
 from enum import Enum
 
+import requests
 from munch import Munch
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 
-
 # Copied from https://raw.githubusercontent.com/BalancerMaxis/bal_addresses/main/extras/chains.json
+FEES_CONSTANTS = requests.get(
+    "https://raw.githubusercontent.com/BalancerMaxis/multisig-ops/main/config/protocol_fees_constants.json"
+).json()
+
+CORE_POOLS = requests.get(
+    "https://raw.githubusercontent.com/BalancerMaxis/multisig-ops/main/config/core_pools.json"
+).json()
+
+
 class Chains(Enum):
     POLYGON = "polygon"
     MAINNET = "mainnet"
