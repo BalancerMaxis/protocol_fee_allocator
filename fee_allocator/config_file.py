@@ -15,6 +15,10 @@ CORE_POOLS = requests.get(
     "https://raw.githubusercontent.com/BalancerMaxis/multisig-ops/main/config/core_pools.json"
 ).json()
 
+REROUTE_CONFIG = requests.get(
+    "https://raw.githubusercontent.com/BalancerMaxis/multisig-ops/main/config/core_pools_rerouting.json"
+).json()
+
 
 class Chains(Enum):
     POLYGON = "polygon"
