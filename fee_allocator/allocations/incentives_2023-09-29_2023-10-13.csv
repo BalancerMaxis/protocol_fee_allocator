@@ -1,4 +1,4 @@
-,chain,symbol,protocol_fees_collected,fees_to_vebal,fees_to_dao,total_incentives,aura_incentives,bal_incentives,redirected_incentives,reroute_incentives
+,chain,symbol,earned_fees,fees_to_vebal,fees_to_dao,total_incentives,aura_incentives,bal_incentives,redirected_incentives,reroute_incentives
 0xf0ad209e2e969eaaa8c882aac71f02d8a047d5c2000200000000000000000b49,polygon,ECLP-WMATIC-stMATIC,1941.79,1017.75,548.02,1762.47,624.27,1138.20,196.70,0
 0xcd78a20c597e367a4e478a2411ceb790604d7c8f000000000000000000000c22,polygon,maticX-WMATIC-BPT,1381.35,724.01,389.85,1253.78,0,1253.78,139.92,0
 0xee278d943584dd8640eaf4cc6c7a5c80c0073e85000200000000000000000bc7,polygon,ECLP-WMATIC-MATICX,417.21,218.67,117.75,0,0,0,-336.42,0
