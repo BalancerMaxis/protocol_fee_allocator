@@ -254,7 +254,7 @@ def run_fees(web3_instances: Munch[Web3], timestamp_now: int,
     aura_vebal_share = calculate_aura_vebal_share(
         web3_instances.mainnet, _target_mainnet_block
     )
-
+    logger.info(f"veBAL aura share at block {_target_mainnet_block}: {aura_vebal_share}")
     # Collect all BPT prices:
     for chain in Chains:
         pools = core_pools.get(chain.value, None)
@@ -318,17 +318,28 @@ def run_fees(web3_instances: Munch[Web3], timestamp_now: int,
             Decimal(fee_constants['min_vote_incentive_amount'])
         )
     # Wrap into dataframe and sort by earned fees and store to csv
-
-    joint_incentives_df = pd.DataFrame.from_dict({
-        **incentives[Chains.MAINNET.value],
-        **incentives[Chains.ARBITRUM.value],
-        **incentives[Chains.POLYGON.value],
-        **incentives[Chains.BASE.value],
-        **incentives[Chains.AVALANCHE.value],
-        **incentives.get(Chains.GNOSIS.value)
-    }, orient='index')
+    joint_incentives_data = {**incentives[Chains.MAINNET.value],
+                             **incentives[Chains.ARBITRUM.value],
+                             **incentives[Chains.POLYGON.value], **incentives[Chains.BASE.value],
+                             **incentives[Chains.AVALANCHE.value],
+                             **incentives.get(Chains.GNOSIS.value)}
+    joint_incentives_df = pd.DataFrame.from_dict(joint_incentives_data, orient='index')
     incentives_df_sorted = joint_incentives_df.sort_values(
         by=['chain', 'earned_fees'], ascending=False
     )
     incentives_df_sorted.to_csv(
         f'../allocations/incentives_{two_weeks_ago.date()}_{datetime_now.date()}.csv')
+
+    # Reconcile
+    all_fees_sum = Decimal(round(sum(fees_to_distribute.values()), 2))
+
+    all_incentives_sum = sum(
+        [sum([x['fees_to_vebal'], x['fees_to_dao'], x['aura_incentives'], x['bal_incentives']]) for
+         x in
+         joint_incentives_data.values()])
+    # Asert almost equal considering that result can be negative
+    delta = all_fees_sum - all_incentives_sum
+    # Make delta positive
+    if delta < 0:
+        delta = -delta
+    assert delta < Decimal(0.01), f"Reconciliation failed. Delta: {delta}"
