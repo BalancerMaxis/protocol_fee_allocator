@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from dataclasses import dataclass
 from datetime import datetime
@@ -15,6 +16,9 @@ from gql.transport.requests import RequestsHTTPTransport
 from web3 import Web3
 from web3.exceptions import BadFunctionCallOutput
 
+from gql.transport.requests import log
+
+log.setLevel(logging.WARNING)
 
 @dataclass
 class PoolBalance:
@@ -122,6 +126,7 @@ def get_abi(contract_name: str) -> Union[Dict, List[Dict]]:
         return json.load(f)
 
 
+# TODO: Improve block searching precision
 def get_block_by_ts(timestamp: int, chain: str) -> int:
     """
     Returns block number for a given timestamp
