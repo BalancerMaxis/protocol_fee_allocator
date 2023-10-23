@@ -39,3 +39,10 @@ jobs:
         commit_user_name:  GitHub Actions
         commit_user_email: github-actions[bot]@users.noreply.github.com
         commit_author: Github Actions <noreply@users.noreply.github.com>
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5.0.2
+      with:
+        commit-message: "feat: Fees report"
+        title: "Fees Report"
+        branch: fees-report
