@@ -38,9 +38,10 @@ def run_fees(
     datetime_now = datetime.datetime.fromtimestamp(timestamp_now)
     two_weeks_ago = datetime.datetime.fromtimestamp(timestamp_2_weeks_ago)
     if fees_file_name is None:
-        fees_file_name = f'../fees_collected/fees_{two_weeks_ago.date()}_{datetime_now.date()}.json'
+        fees_file_name = (f'fee_allocator/fees_collected/'
+                          f'fees_{two_weeks_ago.date()}_{datetime_now.date()}.json')
     else:
-        fees_file_name = f'../fees_collected/{fees_file_name}'
+        fees_file_name = f'fee_allocator/fees_collected/{fees_file_name}'
     with open(fees_file_name) as f:
         fees_to_distribute = json.load(f)
     # Fetch current core pools:
@@ -134,8 +135,8 @@ def run_fees(
         by=['chain', 'earned_fees'], ascending=False
     )
     file_name = (
-        f"../allocations/{output_file_name}" or f'../allocations/incentives_'
-                                                f'{two_weeks_ago.date()}_{datetime_now.date()}.csv'
+        f"fee_allocator/allocations/{output_file_name}"
+        or f'fee_allocator/allocations/incentives_{two_weeks_ago.date()}_{datetime_now.date()}.csv'
     )
     incentives_df_sorted.to_csv(file_name)
 

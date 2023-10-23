@@ -16,12 +16,12 @@ def test_calculate_aura_vebal_share(mocker):
                     functions=MagicMock(
                         totalSupply=MagicMock(
                             return_value=MagicMock(
-                                call=MagicMock(return_value=total_supply))
+                                call=MagicMock(return_value=total_supply)
+                            )
                         ),
                         balanceOf=MagicMock(
-                            return_value=MagicMock(
-                                call=MagicMock(return_value=balance))
-                        )
+                            return_value=MagicMock(call=MagicMock(return_value=balance))
+                        ),
                     )
                 )
             )

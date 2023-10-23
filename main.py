@@ -21,7 +21,9 @@ def main() -> None:
     """
     load_dotenv()
     web3_instances = Munch()
-    web3_instances[Chains.MAINNET.value] = Web3(Web3.HTTPProvider(os.environ["ETHNODEURL"]))
+    web3_instances[Chains.MAINNET.value] = Web3(
+        Web3.HTTPProvider(os.environ["ETHNODEURL"])
+    )
     poly_web3 = Web3(Web3.HTTPProvider(os.environ["POLYNODEURL"]))
     poly_web3.middleware_onion.inject(geth_poa_middleware, layer=0)
     web3_instances[Chains.POLYGON.value] = poly_web3
@@ -29,13 +31,16 @@ def main() -> None:
         Web3.HTTPProvider(os.environ["ARBNODEURL"])
     )
     web3_instances[Chains.GNOSIS.value] = Web3(
-        Web3.HTTPProvider(os.environ["GNOSISNODEURL"], request_kwargs={
-            "headers": {
-                "Authorization": f"Bearer {os.environ['GNOSIS_API_KEY']}"
-            }
-        })
+        Web3.HTTPProvider(
+            os.environ["GNOSISNODEURL"],
+            request_kwargs={
+                "headers": {"Authorization": f"Bearer {os.environ['GNOSIS_API_KEY']}"}
+            },
+        )
     )
-    web3_instances[Chains.BASE.value] = Web3(Web3.HTTPProvider(os.environ["BASENODEURL"]))
+    web3_instances[Chains.BASE.value] = Web3(
+        Web3.HTTPProvider(os.environ["BASENODEURL"])
+    )
     web3_instances[Chains.AVALANCHE.value] = Web3(
         Web3.HTTPProvider(os.environ["AVALANCHENODEURL"])
     )
@@ -45,9 +50,9 @@ def main() -> None:
         TS_NOW,
         TS_2_WEEKS_AGO,
         "current_fees.csv",
-        "current_fees_collected.json"
+        "current_fees_collected.json",
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
