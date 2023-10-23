@@ -46,3 +46,4 @@ jobs:
         commit-message: "feat: Fees report"
         title: "Fees Report"
         branch: fees-report
+        base: main
