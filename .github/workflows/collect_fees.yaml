@@ -1,0 +1,39 @@
+name: Process and run fees report
+
+on:
+  workflow_call:
+
+jobs:
+  generate_fees_report:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Collect fees
+      env:
+        ETHNODEURL: ${{ secrets.ETHNODEURL }}
+        ARBNODEURL: ${{ secrets.ARBNODEURL }}
+        POLYNODEURL: ${{ secrets.POLYNODEURL }}
+        BASENODEURL: ${{ secrets.BASENODEURL }}
+        GNOSISNODEURL: ${{ secrets.GNOSISNODEURL }}
+        GNOSIS_API_KEY: ${{ secrets.GNOSIS_API_KEY }}
+        AVALANCHENODEURL: ${{ secrets.AVALANCHENODEURL }}
+      run: |
+        pwd
+        pip3 install -r requirements.txt
+        python3 fee_allocator/accounting/main.py
+
+    - name: Commit and push changes
+      uses:  stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Generate fees report
+        commit_user_name:  GitHub Actions
+        commit_user_email: github-actions[bot]@users.noreply.github.com
+        commit_author: Github Actions <noreply@users.noreply.github.com>
