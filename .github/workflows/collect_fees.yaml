@@ -28,7 +28,7 @@ jobs:
       run: |
         pwd
         pip3 install -r requirements.txt
-        python3 fee_allocator/accounting/main.py
+        python3 main.py
 
     - name: Commit and push changes
       uses:  stefanzweifel/git-auto-commit-action@v4
