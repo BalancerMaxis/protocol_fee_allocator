@@ -1,7 +1,7 @@
 name: Process and run fees report
 
 on:
-  workflow_call:
+  workflow_dispatch:
 
 jobs:
   generate_fees_report:
