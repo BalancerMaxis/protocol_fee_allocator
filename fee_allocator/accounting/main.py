@@ -1,15 +1,16 @@
-import datetime
 import os
 
 from dotenv import load_dotenv
 from munch import Munch
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
+
 from fee_allocator.accounting.fee_pipeline import run_fees
 from fee_allocator.accounting.settings import Chains
 
 # TS_NOW = 1697148000
 # TS_2_WEEKS_AGO = TS_NOW - (2 * 7 * 24 * 60 * 60)
+# TODO: Should inject current timestamp here
 TS_NOW = 1698070408
 TS_2_WEEKS_AGO = 1697148000
 
@@ -43,7 +44,7 @@ def main() -> None:
         web3_instances,
         TS_NOW,
         TS_2_WEEKS_AGO,
-        "current_fees.json",
+        "current_fees.csv",
         "current_fees_collected.json"
     )
 
