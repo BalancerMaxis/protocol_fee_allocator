@@ -8,6 +8,11 @@ from web3.middleware import geth_poa_middleware
 from fee_allocator.accounting.fee_pipeline import run_fees
 from fee_allocator.accounting.settings import Chains
 
+# TS_NOW = 1697148000
+# TS_2_WEEKS_AGO = TS_NOW - (2 * 7 * 24 * 60 * 60)
+TS_NOW = 1698070408
+TS_2_WEEKS_AGO = 1697148000
+
 
 def main() -> None:
     """
@@ -33,10 +38,14 @@ def main() -> None:
     web3_instances[Chains.AVALANCHE.value] = Web3(
         Web3.HTTPProvider(os.environ["AVALANCHENODEURL"])
     )
-    timestamp_now = 1697148000
-    timestamp_2_weeks_ago = timestamp_now - (2 * 7 * 24 * 60 * 60)
 
-    run_fees(web3_instances, timestamp_now, timestamp_2_weeks_ago)
+    run_fees(
+        web3_instances,
+        TS_NOW,
+        TS_2_WEEKS_AGO,
+        "current_fees.json",
+        "current_fees_collected.json"
+    )
 
 
 if __name__ == '__main__':
