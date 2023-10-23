@@ -13,12 +13,12 @@ from typing import Union
 from gql import Client
 from gql import gql
 from gql.transport.requests import RequestsHTTPTransport
+from gql.transport.requests import log
 from web3 import Web3
 from web3.exceptions import BadFunctionCallOutput
 
-from gql.transport.requests import log
-
 log.setLevel(logging.WARNING)
+
 
 @dataclass
 class PoolBalance:

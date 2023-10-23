@@ -9,4 +9,8 @@ web3==6.9.0
 gql[requests]==3.4.1
 seaborn==0.12.2
 pycoingecko==3.1.0
+
+pytest==7.4.2
+responses==0.23.3
+pytest-mock==3.12.0
 git+https://github.com/BalancerMaxis/bal_addresses@0.8.4
