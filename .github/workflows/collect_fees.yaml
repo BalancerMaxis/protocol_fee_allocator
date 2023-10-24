@@ -35,7 +35,7 @@ jobs:
       run: |
         pwd
         pip3 install -r requirements.txt
-        python3 main.py --ts_now ${{ github.event.inputs.ts_now }} --ts_in_the_past ${{ github.event.inputs.ts_ago }}
+        python3 main.py --ts_now ${{ github.event.inputs.ts_now }} --ts_in_the_past ${{ github.event.inputs.ts_in_the_past }}
 
     - name: Create PR
       id: cpr
