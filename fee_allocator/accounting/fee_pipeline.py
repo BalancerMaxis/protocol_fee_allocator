@@ -115,8 +115,9 @@ def run_fees(
             chain,
             pool_snapshots[chain.value][0],
             pool_snapshots[chain.value][1],
-            datetime_now,
-            bpt_twap_prices,
+            start_ts=timestamp_2_weeks_ago,
+            end_ts=timestamp_now,
+            bpt_twap_prices=bpt_twap_prices,
         )
 
         # Now we have all the data we need to run the fee allocation process
