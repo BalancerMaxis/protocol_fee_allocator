@@ -1,3 +1,4 @@
+import argparse
 import os
 
 from dotenv import load_dotenv
@@ -15,10 +16,20 @@ TS_NOW = 1698070408
 TS_2_WEEKS_AGO = 1697148000
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--ts_now", help="Current timestamp", type=int, required=False)
+parser.add_argument(
+    "--ts_in_the_past", help="Timestamp in the past", type=int, required=False
+)
+
+
 def main() -> None:
     """
     This function is used only to initialize the web3 instances and run main function
     """
+    # Get from input params or use default
+    ts_now = parser.parse_args().ts_now or TS_NOW
+    ts_in_the_past = parser.parse_args().ts_in_the_past or TS_2_WEEKS_AGO
     load_dotenv()
     web3_instances = Munch()
     web3_instances[Chains.MAINNET.value] = Web3(
@@ -47,8 +58,8 @@ def main() -> None:
 
     run_fees(
         web3_instances,
-        TS_NOW,
-        TS_2_WEEKS_AGO,
+        ts_now,
+        ts_in_the_past,
         "current_fees.csv",
         "current_fees_collected.json",
     )

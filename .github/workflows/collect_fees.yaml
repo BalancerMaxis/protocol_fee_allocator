@@ -2,6 +2,13 @@ name: Process and run fees report
 
 on:
   workflow_dispatch:
+    inputs:
+      ts_now:
+        description: 'The timestamp to run on like 1633459200'
+        required: false
+      ts_in_the_past:
+        description: 'The timestamp to run on like 1633459200'
+        required: false
 
 jobs:
   generate_fees_report:
@@ -28,7 +35,7 @@ jobs:
       run: |
         pwd
         pip3 install -r requirements.txt
-        python3 main.py
+        python3 main.py --ts_now ${{ github.event.inputs.ts_now }} --ts_in_the_past ${{ github.event.inputs.ts_ago }}
 
     - name: Create PR
       id: cpr

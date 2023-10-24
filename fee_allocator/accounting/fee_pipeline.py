@@ -25,11 +25,11 @@ from fee_allocator.helpers import get_twap_bpt_price
 
 
 def run_fees(
-        web3_instances: Munch[Web3],
-        timestamp_now: int,
-        timestamp_2_weeks_ago: int,
-        output_file_name: Optional[str] = None,
-        fees_file_name: Optional[str] = None
+    web3_instances: Munch[Web3],
+    timestamp_now: int,
+    timestamp_2_weeks_ago: int,
+    output_file_name: Optional[str] = None,
+    fees_file_name: Optional[str] = None,
 ) -> None:
     """
     This function is used to run the fee allocation process
@@ -38,10 +38,12 @@ def run_fees(
     datetime_now = datetime.datetime.fromtimestamp(timestamp_now)
     two_weeks_ago = datetime.datetime.fromtimestamp(timestamp_2_weeks_ago)
     if fees_file_name is None:
-        fees_file_name = (f'fee_allocator/fees_collected/'
-                          f'fees_{two_weeks_ago.date()}_{datetime_now.date()}.json')
+        fees_file_name = (
+            f"fee_allocator/fees_collected/"
+            f"fees_{two_weeks_ago.date()}_{datetime_now.date()}.json"
+        )
     else:
-        fees_file_name = f'fee_allocator/fees_collected/{fees_file_name}'
+        fees_file_name = f"fee_allocator/fees_collected/{fees_file_name}"
     with open(fees_file_name) as f:
         fees_to_distribute = json.load(f)
     # Fetch current core pools:
@@ -61,7 +63,9 @@ def run_fees(
     aura_vebal_share = calculate_aura_vebal_share(
         web3_instances.mainnet, _target_mainnet_block
     )
-    logger.info(f"veBAL aura share at block {_target_mainnet_block}: {aura_vebal_share}")
+    logger.info(
+        f"veBAL aura share at block {_target_mainnet_block}: {aura_vebal_share}"
+    )
     # Collect all BPT prices:
     for chain in Chains:
         pools = core_pools.get(chain.value, None)
@@ -69,7 +73,7 @@ def run_fees(
             continue
         target_blocks[chain.value] = (
             get_block_by_ts(timestamp_now, chain.value),  # Block now
-            get_block_by_ts(timestamp_2_weeks_ago, chain.value)  # Block 2 weeks ago
+            get_block_by_ts(timestamp_2_weeks_ago, chain.value),  # Block 2 weeks ago
         )
         logger.info(
             f"Running fees collection for {chain.value} between blocks: "
@@ -79,9 +83,11 @@ def run_fees(
         logger.info(f"Collecting bpt prices for {chain.value}")
         for core_pool in pools.keys():
             _bpt_price = get_twap_bpt_price(
-                core_pool, chain.value, getattr(web3_instances, chain.value),
+                core_pool,
+                chain.value,
+                getattr(web3_instances, chain.value),
                 start_date=datetime.datetime.fromtimestamp(timestamp_now),
-                block_number=target_blocks[chain.value][0]
+                block_number=target_blocks[chain.value][0],
             )
             bpt_twap_prices[chain.value][core_pool] = _bpt_price
             logger.info(
@@ -93,17 +99,25 @@ def run_fees(
         )
         # Also, collect all pool snapshots:
         pool_snapshots[chain.value] = (
-            get_balancer_pool_snapshots(target_blocks[chain.value][0],
-                                        BALANCER_GRAPH_URLS[chain.value]),  # now
-            get_balancer_pool_snapshots(target_blocks[chain.value][1],
-                                        BALANCER_GRAPH_URLS[chain.value]),  # 2 weeks ago
+            get_balancer_pool_snapshots(
+                target_blocks[chain.value][0], BALANCER_GRAPH_URLS[chain.value]
+            ),  # now
+            get_balancer_pool_snapshots(
+                target_blocks[chain.value][1], BALANCER_GRAPH_URLS[chain.value]
+            ),  # 2 weeks ago
         )
-        logger.info(f"Colllect fees for {chain.value} between blocks: "
-                    f"{target_blocks[chain.value]}")
-        collected_fees[chain.value] = _collect_fee_info(core_pools[chain.value], chain,
-                                                        pool_snapshots[chain.value][0],
-                                                        pool_snapshots[chain.value][1],
-                                                        datetime_now, bpt_twap_prices)
+        logger.info(
+            f"Colllect fees for {chain.value} between blocks: "
+            f"{target_blocks[chain.value]}"
+        )
+        collected_fees[chain.value] = _collect_fee_info(
+            core_pools[chain.value],
+            chain,
+            pool_snapshots[chain.value][0],
+            pool_snapshots[chain.value][1],
+            datetime_now,
+            bpt_twap_prices,
+        )
 
         # Now we have all the data we need to run the fee allocation process
         logger.info(f"Running fee allocation for {chain.value}")
@@ -111,32 +125,34 @@ def run_fees(
             collected_fees[chain.value],
             chain.value,
             Decimal(fees_to_distribute[chain.value]),
-            Decimal(fee_constants['min_aura_incentive']),
-            Decimal(fee_constants['dao_share_pct']),
-            Decimal(fee_constants['vebal_share_pct']),
-            aura_vebal_share=Decimal(aura_vebal_share)
+            Decimal(fee_constants["min_aura_incentive"]),
+            Decimal(fee_constants["dao_share_pct"]),
+            Decimal(fee_constants["vebal_share_pct"]),
+            aura_vebal_share=Decimal(aura_vebal_share),
         )
-        re_routed_incentives = re_route_incentives(
-            _incentives, chain, reroute_config
-        )
+        re_routed_incentives = re_route_incentives(_incentives, chain, reroute_config)
         incentives[chain.value] = re_distribute_incentives(
             re_routed_incentives,
-            Decimal(fee_constants['min_aura_incentive']),
-            Decimal(fee_constants['min_vote_incentive_amount'])
+            Decimal(fee_constants["min_aura_incentive"]),
+            Decimal(fee_constants["min_vote_incentive_amount"]),
         )
     # Wrap into dataframe and sort by earned fees and store to csv
-    joint_incentives_data = {**incentives[Chains.MAINNET.value],
-                             **incentives[Chains.ARBITRUM.value],
-                             **incentives[Chains.POLYGON.value], **incentives[Chains.BASE.value],
-                             **incentives[Chains.AVALANCHE.value],
-                             **incentives.get(Chains.GNOSIS.value)}
-    joint_incentives_df = pd.DataFrame.from_dict(joint_incentives_data, orient='index')
+    joint_incentives_data = {
+        **incentives[Chains.MAINNET.value],
+        **incentives[Chains.ARBITRUM.value],
+        **incentives[Chains.POLYGON.value],
+        **incentives[Chains.BASE.value],
+        **incentives[Chains.AVALANCHE.value],
+        **incentives.get(Chains.GNOSIS.value),
+    }
+    joint_incentives_df = pd.DataFrame.from_dict(joint_incentives_data, orient="index")
+
     incentives_df_sorted = joint_incentives_df.sort_values(
-        by=['chain', 'earned_fees'], ascending=False
+        by=["chain", "earned_fees"], ascending=False
     )
     file_name = (
         f"fee_allocator/allocations/{output_file_name}"
-        or f'fee_allocator/allocations/incentives_{two_weeks_ago.date()}_{datetime_now.date()}.csv'
+        or f"fee_allocator/allocations/incentives_{two_weeks_ago.date()}_{datetime_now.date()}.csv"
     )
     incentives_df_sorted.to_csv(file_name)
 
@@ -144,9 +160,18 @@ def run_fees(
     all_fees_sum = Decimal(round(sum(fees_to_distribute.values()), 2))
 
     all_incentives_sum = sum(
-        [sum([x['fees_to_vebal'], x['fees_to_dao'], x['aura_incentives'], x['bal_incentives']]) for
-         x in
-         joint_incentives_data.values()])
+        [
+            sum(
+                [
+                    x["fees_to_vebal"],
+                    x["fees_to_dao"],
+                    x["aura_incentives"],
+                    x["bal_incentives"],
+                ]
+            )
+            for x in joint_incentives_data.values()
+        ]
+    )
     # Asert almost equal considering that result can be negative
     delta = all_fees_sum - all_incentives_sum
     # Make delta positive
