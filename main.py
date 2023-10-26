@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 
 from dotenv import load_dotenv
@@ -7,6 +8,7 @@ from web3 import Web3
 from web3.middleware import geth_poa_middleware
 
 from fee_allocator.accounting.fee_pipeline import run_fees
+from fee_allocator.accounting.recon import recon_and_validate
 from fee_allocator.accounting.settings import Chains
 
 # TS_NOW = 1697148000
@@ -25,6 +27,9 @@ parser.add_argument(
     "--output_file_name", help="Output file name", type=str, required=False
 )
 parser.add_argument("--fees_file_name", help="Fees file name", type=str, required=False)
+parser.add_argument("--recon_output", help="Recon file name", type=str, required=False)
+
+ROOT = os.path.dirname(__file__)
 
 
 def main() -> None:
@@ -37,6 +42,11 @@ def main() -> None:
     ts_in_the_past = parser.parse_args().ts_in_the_past or TS_2_WEEKS_AGO
     output_file_name = parser.parse_args().output_file_name or "current_fees.csv"
     fees_file_name = parser.parse_args().fees_file_name or "current_fees_collected.json"
+    recon_output = parser.parse_args().recon_output or "recon_current.json"
+    fees_path = os.path.join(ROOT, "fee_allocator", "fees_collected", fees_file_name)
+    with open(fees_path) as f:
+        fees_to_distribute = json.load(f)
+
     web3_instances = Munch()
     web3_instances[Chains.MAINNET.value] = Web3(
         Web3.HTTPProvider(os.environ["ETHNODEURL"])
@@ -62,7 +72,10 @@ def main() -> None:
         Web3.HTTPProvider(os.environ["AVALANCHENODEURL"])
     )
 
-    run_fees(web3_instances, ts_now, ts_in_the_past, output_file_name, fees_file_name)
+    collected_fees = run_fees(
+        web3_instances, ts_now, ts_in_the_past, output_file_name, fees_to_distribute
+    )
+    recon_and_validate(collected_fees, fees_to_distribute, recon_output)
 
 
 if __name__ == "__main__":

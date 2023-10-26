@@ -6,7 +6,7 @@ from fee_allocator.accounting.settings import Chains
 from fee_allocator.helpers import fetch_token_price_balgql_timerange
 
 
-def _collect_fee_info(
+def collect_fee_info(
     pools: list[str],
     chain: Chains,
     pools_now: list[dict],

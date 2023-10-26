@@ -1,5 +1,4 @@
 import datetime
-import json
 import os
 from decimal import Decimal
 
@@ -8,7 +7,8 @@ import requests
 from munch import Munch
 from web3 import Web3
 
-from fee_allocator.accounting.collectors import _collect_fee_info
+from fee_allocator.accounting import PROJECT_ROOT
+from fee_allocator.accounting.collectors import collect_fee_info
 from fee_allocator.accounting.distribution import calc_and_split_incentives
 from fee_allocator.accounting.distribution import re_distribute_incentives
 from fee_allocator.accounting.distribution import re_route_incentives
@@ -23,26 +23,17 @@ from fee_allocator.helpers import get_balancer_pool_snapshots
 from fee_allocator.helpers import get_block_by_ts
 from fee_allocator.helpers import get_twap_bpt_price
 
-# Get project root
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-
 
 def run_fees(
     web3_instances: Munch[Web3],
     timestamp_now: int,
     timestamp_2_weeks_ago: int,
     output_file_name: str,
-    fees_file_name: str,
-) -> None:
+    fees_to_distribute: dict,
+) -> dict:
     """
     This function is used to run the fee allocation process
     """
-
-    fees_path = os.path.join(
-        PROJECT_ROOT, f"fee_allocator/fees_collected/{fees_file_name}"
-    )
-    with open(fees_path) as f:
-        fees_to_distribute = json.load(f)
     # Fetch current core pools:
     core_pools = requests.get(CORE_POOLS_URL).json()
     # Fetch fee constants:
@@ -107,7 +98,7 @@ def run_fees(
             f"Colllect fees for {chain.value} between blocks: "
             f"{target_blocks[chain.value]}"
         )
-        collected_fees[chain.value] = _collect_fee_info(
+        collected_fees[chain.value] = collect_fee_info(
             core_pools[chain.value],
             chain,
             pool_snapshots[chain.value][0],
@@ -175,3 +166,4 @@ def run_fees(
     if delta < 0:
         delta = -delta
     assert delta < Decimal(0.01), f"Reconciliation failed. Delta: {delta}"
+    return joint_incentives_data
