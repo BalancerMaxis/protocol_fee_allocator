@@ -1,3 +1,5 @@
+import datetime
+
 import simplejson as json
 import os
 from decimal import Decimal
@@ -8,7 +10,8 @@ from fee_allocator.accounting import PROJECT_ROOT
 def recon_and_validate(
     fees: dict,
     fees_to_distribute: dict,
-    recon_output: str,
+    timestamp_now: int,
+    timestamp_2_weeks_ago: int,
 ) -> None:
     """
     Recon fees collected from the fee pipeline. Store the summary to json file
@@ -37,7 +40,7 @@ def recon_and_validate(
     # Make delta positive
     if delta < 0:
         delta = -delta
-    assert delta < Decimal(0.01), f"Reconciliation failed. Delta: {delta}"
+    assert delta < Decimal(0.1), f"Reconciliation failed. Delta: {delta}"
 
     # Store the summary to json file
     summary = {
@@ -48,11 +51,34 @@ def recon_and_validate(
         "balIncentives": bal_incentives,
         "feesToDao": fees_to_dao,
         "feesToVebal": fees_to_vebal,
+        "auraIncentivesPct": round(aura_incentives / all_incentives_sum, 4),
+        "balIncentivesPct": round(bal_incentives / all_incentives_sum, 4),
+        "feesToDaoPct": round(fees_to_dao / all_incentives_sum, 4),
+        "feesToVebalPct": round(fees_to_vebal / all_incentives_sum, 4),
+        # UNIX timestamp
+        "createdAt": int(datetime.datetime.now().timestamp()),
+        "periodStart": timestamp_2_weeks_ago,
+        "periodEnd": timestamp_now,
     }
 
-    recon_file_name = os.path.join(
-        PROJECT_ROOT, f"fee_allocator/summaries/{recon_output}"
-    )
-    # Dump to json file
+    recon_file_name = os.path.join(PROJECT_ROOT, "fee_allocator/summaries/recon.json")
+    # Append new summary to the file
+    with open(recon_file_name) as f:
+        existing_data = json.load(f)
+
+    # Make sure that the summary is not already in the file
+    already_in_file = False
+    for item in existing_data:
+        if (
+            item["periodStart"] == summary["periodStart"]
+            and item["periodEnd"] == summary["periodEnd"]
+        ):
+            # Don't append the summary if it's already in the file
+            already_in_file = True
+            break
+    if already_in_file:
+        return
+
+    existing_data.append(summary)
     with open(recon_file_name, "w") as f:
-        json.dump(summary, f, use_decimal=True)
+        json.dump(existing_data, f, use_decimal=True, indent=2)

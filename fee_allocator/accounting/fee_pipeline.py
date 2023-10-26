@@ -143,27 +143,4 @@ def run_fees(
         PROJECT_ROOT, f"fee_allocator/allocations/{output_file_name}"
     )
     incentives_df_sorted.to_csv(allocations_file_name)
-
-    # Reconcile
-    all_fees_sum = Decimal(round(sum(fees_to_distribute.values()), 2))
-
-    all_incentives_sum = sum(
-        [
-            sum(
-                [
-                    x["fees_to_vebal"],
-                    x["fees_to_dao"],
-                    x["aura_incentives"],
-                    x["bal_incentives"],
-                ]
-            )
-            for x in joint_incentives_data.values()
-        ]
-    )
-    # Asert almost equal considering that result can be negative
-    delta = all_fees_sum - all_incentives_sum
-    # Make delta positive
-    if delta < 0:
-        delta = -delta
-    assert delta < Decimal(0.01), f"Reconciliation failed. Delta: {delta}"
     return joint_incentives_data
