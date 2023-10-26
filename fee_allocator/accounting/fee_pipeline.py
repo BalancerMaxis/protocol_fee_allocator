@@ -1,7 +1,7 @@
 import datetime
 import json
+import os
 from decimal import Decimal
-from typing import Optional
 
 import pandas as pd
 import requests
@@ -23,28 +23,25 @@ from fee_allocator.helpers import get_balancer_pool_snapshots
 from fee_allocator.helpers import get_block_by_ts
 from fee_allocator.helpers import get_twap_bpt_price
 
+# Get project root
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+
 
 def run_fees(
     web3_instances: Munch[Web3],
     timestamp_now: int,
     timestamp_2_weeks_ago: int,
-    output_file_name: Optional[str] = None,
-    fees_file_name: Optional[str] = None,
+    output_file_name: str,
+    fees_file_name: str,
 ) -> None:
     """
     This function is used to run the fee allocation process
     """
 
-    datetime_now = datetime.datetime.fromtimestamp(timestamp_now)
-    two_weeks_ago = datetime.datetime.fromtimestamp(timestamp_2_weeks_ago)
-    if fees_file_name is None:
-        fees_file_name = (
-            f"fee_allocator/fees_collected/"
-            f"fees_{two_weeks_ago.date()}_{datetime_now.date()}.json"
-        )
-    else:
-        fees_file_name = f"fee_allocator/fees_collected/{fees_file_name}"
-    with open(fees_file_name) as f:
+    fees_path = os.path.join(
+        PROJECT_ROOT, f"fee_allocator/fees_collected/{fees_file_name}"
+    )
+    with open(fees_path) as f:
         fees_to_distribute = json.load(f)
     # Fetch current core pools:
     core_pools = requests.get(CORE_POOLS_URL).json()
@@ -151,11 +148,10 @@ def run_fees(
     incentives_df_sorted = joint_incentives_df.sort_values(
         by=["chain", "earned_fees"], ascending=False
     )
-    file_name = (
-        f"fee_allocator/allocations/{output_file_name}"
-        or f"fee_allocator/allocations/incentives_{two_weeks_ago.date()}_{datetime_now.date()}.csv"
+    allocations_file_name = os.path.join(
+        PROJECT_ROOT, f"fee_allocator/allocations/{output_file_name}"
     )
-    incentives_df_sorted.to_csv(file_name)
+    incentives_df_sorted.to_csv(allocations_file_name)
 
     # Reconcile
     all_fees_sum = Decimal(round(sum(fees_to_distribute.values()), 2))

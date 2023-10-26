@@ -12,8 +12,8 @@ from fee_allocator.accounting.settings import Chains
 # TS_NOW = 1697148000
 # TS_2_WEEKS_AGO = TS_NOW - (2 * 7 * 24 * 60 * 60)
 # TODO: Should inject current timestamp here
-TS_NOW = 1698070408
-TS_2_WEEKS_AGO = 1697148000
+TS_NOW = 1698319747
+TS_2_WEEKS_AGO = 1697155200
 
 
 parser = argparse.ArgumentParser()
@@ -21,16 +21,22 @@ parser.add_argument("--ts_now", help="Current timestamp", type=int, required=Fal
 parser.add_argument(
     "--ts_in_the_past", help="Timestamp in the past", type=int, required=False
 )
+parser.add_argument(
+    "--output_file_name", help="Output file name", type=str, required=False
+)
+parser.add_argument("--fees_file_name", help="Fees file name", type=str, required=False)
 
 
 def main() -> None:
     """
     This function is used only to initialize the web3 instances and run main function
     """
+    load_dotenv()
     # Get from input params or use default
     ts_now = parser.parse_args().ts_now or TS_NOW
     ts_in_the_past = parser.parse_args().ts_in_the_past or TS_2_WEEKS_AGO
-    load_dotenv()
+    output_file_name = parser.parse_args().output_file_name or "current_fees.csv"
+    fees_file_name = parser.parse_args().fees_file_name or "current_fees_collected.json"
     web3_instances = Munch()
     web3_instances[Chains.MAINNET.value] = Web3(
         Web3.HTTPProvider(os.environ["ETHNODEURL"])
@@ -56,13 +62,7 @@ def main() -> None:
         Web3.HTTPProvider(os.environ["AVALANCHENODEURL"])
     )
 
-    run_fees(
-        web3_instances,
-        ts_now,
-        ts_in_the_past,
-        "current_fees.csv",
-        "current_fees_collected.json",
-    )
+    run_fees(web3_instances, ts_now, ts_in_the_past, output_file_name, fees_file_name)
 
 
 if __name__ == "__main__":
