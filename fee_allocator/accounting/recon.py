@@ -60,7 +60,9 @@ def recon_and_validate(
         "periodStart": timestamp_2_weeks_ago,
         "periodEnd": timestamp_now,
     }
-
+    # If everything is 0 - don't store the summary
+    if all_incentives_sum == 0 or all_fees_sum == 0:
+        return
     recon_file_name = os.path.join(PROJECT_ROOT, "fee_allocator/summaries/recon.json")
     # Append new summary to the file
     with open(recon_file_name) as f:
