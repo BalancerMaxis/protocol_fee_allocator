@@ -49,15 +49,27 @@ def recon_and_validate(
         delta = -delta
     assert delta < Decimal(0.1), f"Reconciliation failed. Delta: {delta}"
 
+    # Make sure all SUM(pct) == 1
+    assert (
+        round(
+            aura_incentives / all_incentives_sum
+            + bal_incentives / all_incentives_sum
+            + fees_to_dao / all_incentives_sum
+            + fees_to_vebal / all_incentives_sum,
+            4,
+        )
+        == 1
+    ), "Reconciliation failed. Sum of percentages is not equal to 1"
+
     # Store the summary to json file
     summary = {
-        "feesCollected": all_fees_sum,
-        "incentivesDistributed": all_incentives_sum,
-        "feesNotDistributed": delta,
-        "auraIncentives": aura_incentives,
-        "balIncentives": bal_incentives,
-        "feesToDao": fees_to_dao,
-        "feesToVebal": fees_to_vebal,
+        "feesCollected": round(all_fees_sum, 2),
+        "incentivesDistributed": round(all_incentives_sum, 2),
+        "feesNotDistributed": round(delta, 2),
+        "auraIncentives": round(aura_incentives, 2),
+        "balIncentives": round(bal_incentives, 2),
+        "feesToDao": round(fees_to_dao, 2),
+        "feesToVebal": round(fees_to_vebal, 2),
         "auraIncentivesPct": round(aura_incentives / all_incentives_sum, 4),
         "balIncentivesPct": round(bal_incentives / all_incentives_sum, 4),
         "feesToDaoPct": round(fees_to_dao / all_incentives_sum, 4),
