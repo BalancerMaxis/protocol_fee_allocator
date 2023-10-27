@@ -98,6 +98,33 @@ POOLS_SNAPSHOTS_QUERY = """
 }}
 """
 
+
+BAL_GET_VOTING_LIST_QUERY = """
+query VeBalGetVotingList {
+  veBalGetVotingList
+  {
+    id
+    address
+    chain
+    type
+    symbol
+    gauge {
+      address
+      isKilled
+      relativeWeightCap
+      addedTimestamp
+      childGaugeAddress
+    }
+    tokens {
+      address
+      logoURI
+      symbol
+      weight
+    }
+  }
+}
+"""
+
 BALANCER_CONTRACTS = {
     "mainnet": {
         "BALANCER_VAULT_ADDRESS": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
@@ -344,3 +371,17 @@ def calculate_aura_vebal_share(web3: Web3, block_number: int) -> Decimal:
         "0xaF52695E1bB01A16D33D7194C28C42b10e0Dbec2"  # veBAL aura holder
     ).call(block_identifier=block_number)
     return Decimal(aura_vebal_balance) / Decimal(total_supply)
+
+
+def fetch_all_pools_info() -> List[Dict]:
+    """
+    Fetches all pools info from balancer graphql api
+    """
+    transport = RequestsHTTPTransport(
+        url=BAL_GQL_URL,
+        retries=2,
+    )
+    client = Client(transport=transport, fetch_schema_from_transport=True)
+    query = gql(BAL_GET_VOTING_LIST_QUERY)
+    result = client.execute(query)
+    return result["veBalGetVotingList"]

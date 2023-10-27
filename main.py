@@ -8,13 +8,14 @@ from web3 import Web3
 from web3.middleware import geth_poa_middleware
 
 from fee_allocator.accounting.fee_pipeline import run_fees
+from fee_allocator.accounting.recon import generate_and_save_input_csv
 from fee_allocator.accounting.recon import recon_and_validate
 from fee_allocator.accounting.settings import Chains
 
 # TS_NOW = 1697148000
 # TS_2_WEEKS_AGO = TS_NOW - (2 * 7 * 24 * 60 * 60)
 # TODO: Should inject current timestamp here
-TS_NOW = 1698319747
+TS_NOW = 1698364800
 TS_2_WEEKS_AGO = 1697155200
 
 
@@ -74,6 +75,7 @@ def main() -> None:
         web3_instances, ts_now, ts_in_the_past, output_file_name, fees_to_distribute
     )
     recon_and_validate(collected_fees, fees_to_distribute, ts_now, ts_in_the_past)
+    generate_and_save_input_csv(collected_fees, ts_now)
 
 
 if __name__ == "__main__":
