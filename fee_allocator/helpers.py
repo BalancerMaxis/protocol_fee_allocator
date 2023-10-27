@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from dataclasses import dataclass
 from datetime import datetime
@@ -12,8 +13,11 @@ from typing import Union
 from gql import Client
 from gql import gql
 from gql.transport.requests import RequestsHTTPTransport
+from gql.transport.requests import log
 from web3 import Web3
 from web3.exceptions import BadFunctionCallOutput
+
+log.setLevel(logging.WARNING)
 
 
 @dataclass
@@ -94,6 +98,33 @@ POOLS_SNAPSHOTS_QUERY = """
 }}
 """
 
+
+BAL_GET_VOTING_LIST_QUERY = """
+query VeBalGetVotingList {
+  veBalGetVotingList
+  {
+    id
+    address
+    chain
+    type
+    symbol
+    gauge {
+      address
+      isKilled
+      relativeWeightCap
+      addedTimestamp
+      childGaugeAddress
+    }
+    tokens {
+      address
+      logoURI
+      symbol
+      weight
+    }
+  }
+}
+"""
+
 BALANCER_CONTRACTS = {
     "mainnet": {
         "BALANCER_VAULT_ADDRESS": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
@@ -122,6 +153,7 @@ def get_abi(contract_name: str) -> Union[Dict, List[Dict]]:
         return json.load(f)
 
 
+# TODO: Improve block searching precision
 def get_block_by_ts(timestamp: int, chain: str) -> int:
     """
     Returns block number for a given timestamp
@@ -146,12 +178,12 @@ def get_block_by_ts(timestamp: int, chain: str) -> int:
 
 
 def get_twap_bpt_price(
-        balancer_pool_id: str,
-        chain: str,
-        web3: Web3,
-        start_date: Optional[datetime] = datetime.now(),
-        block_number: Optional[int] = None,
-        twap_days: Optional[int] = 14,
+    balancer_pool_id: str,
+    chain: str,
+    web3: Web3,
+    start_date: Optional[datetime] = datetime.now(),
+    block_number: Optional[int] = None,
+    twap_days: Optional[int] = 14,
 ) -> Optional[Decimal]:
     """
     BPT dollar price equals to Sum of all underlying ERC20 tokens in the Balancer pool divided by
@@ -173,14 +205,17 @@ def get_twap_bpt_price(
         total_supply = Decimal(
             weighed_pool_contract.functions.totalSupply().call(
                 block_identifier=block_number
-            ) / 10 ** decimals
+            )
+            / 10**decimals
         )
     except BadFunctionCallOutput:
         print("Pool wasn't created at the block number")
         return None
     balances = _get_balancer_pool_tokens_balances(
-        balancer_pool_id=balancer_pool_id, web3=web3, chain=chain,
-        block_number=block_number or web3.eth.block_number
+        balancer_pool_id=balancer_pool_id,
+        web3=web3,
+        chain=chain,
+        block_number=block_number or web3.eth.block_number,
     )
     # Now let's calculate price with twap
     for balance in balances:
@@ -196,7 +231,7 @@ def get_twap_bpt_price(
 
 
 def _get_balancer_pool_tokens_balances(
-        balancer_pool_id: str, web3: Web3, chain: str, block_number: Optional[int] = None
+    balancer_pool_id: str, web3: Web3, chain: str, block_number: Optional[int] = None
 ) -> Optional[List[PoolBalance]]:
     """
     Returns all token balances for a given balancer pool
@@ -209,16 +244,16 @@ def _get_balancer_pool_tokens_balances(
     )
 
     # Get all tokens in the pool and their balances
-    tokens, balances, _ = balancer_vault.functions.getPoolTokens(
-        balancer_pool_id
-    ).call(block_identifier=block_number)
+    tokens, balances, _ = balancer_vault.functions.getPoolTokens(balancer_pool_id).call(
+        block_identifier=block_number
+    )
     token_balances = []
     for index, token in enumerate(tokens):
         token_contract = web3.eth.contract(
             address=web3.to_checksum_address(token), abi=get_abi("ERC20")
         )
         decimals = token_contract.functions.decimals().call()
-        balance = Decimal(balances[index]) / Decimal(10 ** decimals)
+        balance = Decimal(balances[index]) / Decimal(10**decimals)
         pool_token_balance = PoolBalance(
             token_addr=token,
             token_name=token_contract.functions.name().call(),
@@ -231,10 +266,10 @@ def _get_balancer_pool_tokens_balances(
 
 
 def fetch_token_price_balgql(
-        token_addr: str,
-        chain: str,
-        start_date: Optional[datetime] = datetime.now(),
-        twap_days: Optional[int] = 14,
+    token_addr: str,
+    chain: str,
+    start_date: Optional[datetime] = datetime.now(),
+    twap_days: Optional[int] = 14,
 ) -> Optional[Decimal]:
     """
     Fetches 30 days of token prices from balancer graphql api and calculate twap over 14 days
@@ -266,6 +301,40 @@ def fetch_token_price_balgql(
     return twap_price
 
 
+def fetch_token_price_balgql_timerange(
+    token_addr: str,
+    chain: str,
+    start_date_ts: int,
+    end_date_ts: int,
+) -> Optional[Decimal]:
+    """
+    Fetches 30 days of token prices from balancer graphql api and calculate twap over time range
+    """
+    transport = RequestsHTTPTransport(
+        url=BAL_GQL_URL,
+        retries=2,
+        headers={"chainId": CHAIN_TO_CHAIN_ID_MAP[chain]} if chain != "mainnet" else {},
+    )
+    client = Client(transport=transport, fetch_schema_from_transport=True)
+    query = gql(BAL_GQL_QUERY.format(token_addr=token_addr.lower()))
+    result = client.execute(query)
+    # Sort result by timestamp desc
+    result["tokenGetPriceChartData"].sort(key=lambda x: x["timestamp"], reverse=True)
+    # Filter results so they are in between start_date and end_date timestamps
+    result_slice = [
+        item
+        for item in result["tokenGetPriceChartData"]
+        if end_date_ts >= item["timestamp"] >= start_date_ts
+    ]
+    if len(result_slice) == 0:
+        return None
+    # Sum all prices and divide by number of days
+    twap_price = Decimal(
+        sum([Decimal(item["price"]) for item in result_slice]) / len(result_slice)
+    )
+    return twap_price
+
+
 def get_balancer_pool_snapshots(block: int, graph_url: str) -> Optional[List[Dict]]:
     transport = RequestsHTTPTransport(url=graph_url, retries=3)
     client = Client(
@@ -276,12 +345,13 @@ def get_balancer_pool_snapshots(block: int, graph_url: str) -> Optional[List[Dic
     offset = 0
     while True:
         result = client.execute(
-            gql(POOLS_SNAPSHOTS_QUERY.format(first=limit, skip=offset, block=block)))
-        all_pools.extend(result['poolSnapshots'])
+            gql(POOLS_SNAPSHOTS_QUERY.format(first=limit, skip=offset, block=block))
+        )
+        all_pools.extend(result["poolSnapshots"])
         offset += limit
         if offset >= 5000:
             break
-        if len(result['poolSnapshots']) < limit - 1:
+        if len(result["poolSnapshots"]) < limit - 1:
             break
     return all_pools
 
@@ -291,9 +361,8 @@ def calculate_aura_vebal_share(web3: Web3, block_number: int) -> Decimal:
     Function that calculate veBAL share of AURA auraBAL from the total supply of veBAL
     """
     ve_bal_contract = web3.eth.contract(
-        address=web3.to_checksum_address(
-            "0xC128a9954e6c874eA3d62ce62B468bA073093F25"
-        ), abi=get_abi("ERC20")
+        address=web3.to_checksum_address("0xC128a9954e6c874eA3d62ce62B468bA073093F25"),
+        abi=get_abi("ERC20"),
     )
     total_supply = ve_bal_contract.functions.totalSupply().call(
         block_identifier=block_number
@@ -302,3 +371,17 @@ def calculate_aura_vebal_share(web3: Web3, block_number: int) -> Decimal:
         "0xaF52695E1bB01A16D33D7194C28C42b10e0Dbec2"  # veBAL aura holder
     ).call(block_identifier=block_number)
     return Decimal(aura_vebal_balance) / Decimal(total_supply)
+
+
+def fetch_all_pools_info() -> List[Dict]:
+    """
+    Fetches all pools info from balancer graphql api
+    """
+    transport = RequestsHTTPTransport(
+        url=BAL_GQL_URL,
+        retries=2,
+    )
+    client = Client(transport=transport, fetch_schema_from_transport=True)
+    query = gql(BAL_GET_VOTING_LIST_QUERY)
+    result = client.execute(query)
+    return result["veBalGetVotingList"]

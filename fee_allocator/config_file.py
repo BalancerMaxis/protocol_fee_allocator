@@ -39,8 +39,13 @@ WEB3_INSTANCES[Chains.POLYGON.value] = poly_web3
 WEB3_INSTANCES[Chains.ARBITRUM.value] = Web3(
     Web3.HTTPProvider(os.environ["ARBNODEURL"])
 )
+GNOSIS_PARAMS = {
+    "headers": {
+        "Authorization": f"Bearer {os.environ['GNOSIS_API_KEY']}"
+    }
+}
 WEB3_INSTANCES[Chains.GNOSIS.value] = Web3(
-    Web3.HTTPProvider(os.environ["GNOSISNODEURL"])
+    Web3.HTTPProvider(os.environ["GNOSISNODEURL"], request_kwargs=GNOSIS_PARAMS)
 )
 WEB3_INSTANCES[Chains.BASE.value] = Web3(Web3.HTTPProvider(os.environ["BASENODEURL"]))
 WEB3_INSTANCES[Chains.AVALANCHE.value] = Web3(
