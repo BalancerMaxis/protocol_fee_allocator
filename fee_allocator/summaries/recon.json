@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "feesCollected": 251034.06,
+    "incentivesDistributed": 251034.09,
+    "feesNotDistributed": 0.03,
+    "auraIncentives": 50886.53,
+    "balIncentives": 74630.55,
+    "feesToDao": 43930.96,
+    "feesToVebal": 81586.05,
+    "auraIncentivesPct": 0.2027,
+    "balIncentivesPct": 0.2973,
+    "feesToDaoPct": 0.1750,
+    "feesToVebalPct": 0.3250,
+    "createdAt": 1698431967,
+    "periodStart": 1697155200,
+    "periodEnd": 1698364800
+  }
+]
