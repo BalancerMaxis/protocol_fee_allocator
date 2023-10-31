@@ -15,8 +15,8 @@ from fee_allocator.accounting.settings import Chains
 # TS_NOW = 1697148000
 # TS_2_WEEKS_AGO = TS_NOW - (2 * 7 * 24 * 60 * 60)
 # TODO: Should inject current timestamp here
-TS_NOW = 1698364800
-TS_2_WEEKS_AGO = 1697155200
+TS_NOW = 1698762266
+TS_2_WEEKS_AGO = 1698364800
 
 
 parser = argparse.ArgumentParser()
