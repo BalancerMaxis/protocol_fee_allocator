@@ -1,6 +1,7 @@
 name: Process and run fees report
 
 on:
+  workflow_dispatch:
   schedule:
     # Every hour
     - cron: "0 * * * *"
