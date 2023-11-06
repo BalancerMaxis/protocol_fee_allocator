@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+from datetime import datetime
 
 from dotenv import load_dotenv
 from munch import Munch
@@ -12,10 +13,9 @@ from fee_allocator.accounting.recon import generate_and_save_input_csv
 from fee_allocator.accounting.recon import recon_and_validate
 from fee_allocator.accounting.settings import Chains
 
-# TS_NOW = 1697148000
-# TS_2_WEEKS_AGO = TS_NOW - (2 * 7 * 24 * 60 * 60)
-# TODO: Should inject current timestamp here
-TS_NOW = 1699273000
+# Timestamp now using datetime.datetime.now().timestamp()
+DELTA = 1000
+TS_NOW = int(datetime.now().timestamp()) - DELTA
 TS_2_WEEKS_AGO = 1698364800
 
 

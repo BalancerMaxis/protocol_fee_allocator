@@ -1,20 +1,9 @@
 name: Process and run fees report
 
 on:
-  workflow_dispatch:
-    inputs:
-      ts_now:
-        description: 'The timestamp to run on like 1633459200'
-        required: false
-      ts_in_the_past:
-        description: 'The timestamp to run on like 1633459200'
-        required: false
-      output_file_name:
-        description: 'The name of the output file'
-        required: false
-      fees_file_name:
-        description: 'The name of the fees file'
-        required: false
+  schedule:
+    # Every hour
+    - cron: "0 * * * *"
 
 jobs:
   generate_fees_report:
