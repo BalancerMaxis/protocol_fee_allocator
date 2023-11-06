@@ -37,6 +37,7 @@ CHAIN_TO_CHAIN_ID_MAP = {
     "base": "8453",
     "gnosis": "100",
     "avalanche": "43114",
+    "zkevm": "1101",
 }
 BAL_GQL_URL = "https://api-v3.balancer.fi/"
 
@@ -47,6 +48,7 @@ BLOCKS_BY_CHAIN = {
     "base": "https://api.studio.thegraph.com/query/48427/bleu-base-blocks/version/latest",
     "gnosis": "https://api.thegraph.com/subgraphs/name/rebase-agency/gnosis-chain-blocks",
     "avalanche": "https://api.thegraph.com/subgraphs/name/iliaazhel/avalanche-blocks",
+    "zkevm": "https://api.studio.thegraph.com/query/48427/bleu-polygon-zkevm-blocks/version/latest",
 }
 
 BLOCKS_QUERY = """
@@ -144,6 +146,9 @@ BALANCER_CONTRACTS = {
     "avalanche": {
         "BALANCER_VAULT_ADDRESS": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
     },
+    "zkevm": {
+        "BALANCER_VAULT_ADDRESS": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
+    },
 }
 
 
@@ -166,8 +171,8 @@ def get_block_by_ts(timestamp: int, chain: str) -> int:
     )
     query = gql(
         BLOCKS_QUERY.format(
-            ts_gt=timestamp - 2000,
-            ts_lt=timestamp + 2000,
+            ts_gt=timestamp - 200,
+            ts_lt=timestamp + 200,
         )
     )
     client = Client(transport=transport, fetch_schema_from_transport=True)

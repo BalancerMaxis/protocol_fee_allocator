@@ -15,7 +15,7 @@ from fee_allocator.accounting.settings import Chains
 # TS_NOW = 1697148000
 # TS_2_WEEKS_AGO = TS_NOW - (2 * 7 * 24 * 60 * 60)
 # TODO: Should inject current timestamp here
-TS_NOW = 1698762266
+TS_NOW = 1699273000
 TS_2_WEEKS_AGO = 1698364800
 
 
@@ -70,7 +70,9 @@ def main() -> None:
     web3_instances[Chains.AVALANCHE.value] = Web3(
         Web3.HTTPProvider(os.environ["AVALANCHENODEURL"])
     )
-
+    web3_instances[Chains.ZKEVM.value] = Web3(
+        Web3.HTTPProvider(os.environ["POLYZKEVMNODEURL"])
+    )
     collected_fees = run_fees(
         web3_instances, ts_now, ts_in_the_past, output_file_name, fees_to_distribute
     )
