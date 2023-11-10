@@ -13,11 +13,13 @@ from fee_allocator.accounting.recon import generate_and_save_input_csv
 from fee_allocator.accounting.recon import recon_and_validate
 from fee_allocator.accounting.settings import Chains
 
-# Timestamp now using datetime.datetime.now().timestamp()
-DELTA = 1000
-TS_NOW = int(datetime.now().timestamp()) - DELTA
-TS_2_WEEKS_AGO = 1698364800
 
+DELTA = 1000
+# TS_NOW = int(datetime.now().timestamp()) - DELTA
+# TS_NOW = 1699574400
+# TS_2_WEEKS_AGO = 1698364800
+TS_NOW = int(datetime.now().timestamp()) - DELTA
+TS_2_WEEKS_AGO = 1699574400
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--ts_now", help="Current timestamp", type=int, required=False)
