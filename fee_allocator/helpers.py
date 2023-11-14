@@ -186,9 +186,9 @@ def get_twap_bpt_price(
     balancer_pool_id: str,
     chain: str,
     web3: Web3,
-    start_date: Optional[datetime] = datetime.now(),
+    start_date: Optional[datetime] = datetime.now() - timedelta(days=14),
+    end_date: Optional[datetime] = datetime.now(),
     block_number: Optional[int] = None,
-    twap_days: Optional[int] = 14,
 ) -> Optional[Decimal]:
     """
     BPT dollar price equals to Sum of all underlying ERC20 tokens in the Balancer pool divided by
@@ -224,8 +224,11 @@ def get_twap_bpt_price(
     )
     # Now let's calculate price with twap
     for balance in balances:
-        balance.twap_price = fetch_token_price_balgql(
-            balance.token_addr, chain, start_date, twap_days
+        balance.twap_price = fetch_token_price_balgql_timerange(
+            balance.token_addr,
+            chain,
+            int(start_date.timestamp()),
+            int(end_date.timestamp()),
         )
     # Make sure we have all prices
     if not all([balance.twap_price for balance in balances]):

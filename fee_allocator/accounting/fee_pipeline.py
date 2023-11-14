@@ -74,7 +74,8 @@ def run_fees(
                 core_pool,
                 chain.value,
                 getattr(web3_instances, chain.value),
-                start_date=datetime.datetime.fromtimestamp(timestamp_now),
+                start_date=datetime.datetime.fromtimestamp(timestamp_2_weeks_ago),
+                end_date=datetime.datetime.fromtimestamp(timestamp_now),
                 block_number=target_blocks[chain.value][0],
             )
             bpt_twap_prices[chain.value][core_pool] = _bpt_price
