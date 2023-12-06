@@ -242,9 +242,5 @@ def generate_payload(web3: Web3, csv_file: str):
 
 
 if __name__ == "__main__":
-    web3 = Web3(
-        Web3.HTTPProvider(
-            "https://eth-mainnet.alchemyapi.io/v2/xBBFbqEE-Fd2pfXFv1VeNqdGZrt3UFis"
-        )
-    )
+    web3 = Web3(Web3.HTTPProvider("https://eth-mainnet.alchemyapi.io/v2/xxx"))
     generate_payload(web3, "../allocations/output_for_msig/2023-11-23.csv")
