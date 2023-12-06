@@ -13,13 +13,8 @@ address_book = AddrBook("mainnet")
 safe = address_book.multisigs.fees
 today = str(date.today())
 
-# Hidden hands ve2 config
-NO_MAX_TOKENS_PER_VOTE = 0  # No limit
-PERIODS_PER_EPOCH = {"aura": 1, "balancer": 2}  # 1x 2 week round  # 2x 1 week rounds
 SNAPSHOT_URL = "https://hub.snapshot.org/graphql?"
 HH_API_URL = "https://api.hiddenhand.finance/proposal"
-COWSWAP_DEADLINE = 24 * 60 * 60  # 24 hours
-COWSWAP_SLIPPAGE = 0.005  # 0.05%
 GAUGE_MAPPING_URL = "https://raw.githubusercontent.com/aurafinance/aura-contracts/main/tasks/snapshot/gauge_choices.json"
 
 # queries for choices and proposals info
@@ -31,14 +26,6 @@ query ($proposal_id: String) {
 }
 """
 
-# `state: "all"` ensures all proposals are included
-QUERY_PROPOSALS = """
-query {
-  proposals(first: 100, where: { space: "gauges.aurafinance.eth" , state: "all"}) {
-    id
-  }
-}
-"""
 with open("templates/bribe_balancer.json") as f:
     PAYLOAD = json.load(f)
 with open("templates/bribe_balancer.json") as f:
