@@ -226,8 +226,13 @@ def generate_payload(web3: Web3, csv_file: str):
     print(f"USDC payments: {payments}")
     print(f"USDC to veBAL: {usdc.functions.balanceOf(safe).call() - spent_usdc}")
     print(f"BAL to veBAL: {bal.functions.balanceOf(safe).call()}")
+    print(f"Total USDC to pay: {total_mantissa + payments}")
 
 
 if __name__ == "__main__":
-    web3 = Web3(Web3.HTTPProvider("https://eth-mainnet.alchemyapi.io/v2/xxx"))
-    generate_payload(web3, "../allocations/output_for_msig/2023-11-23.csv")
+    web3 = Web3(
+        Web3.HTTPProvider(
+            "https://eth-mainnet.alchemyapi.io/v2/xBBFbqEE-Fd2pfXFv1VeNqdGZrt3UFis"
+        )
+    )
+    generate_payload(web3, "../allocations/output_for_msig/2023-12-07.csv")
