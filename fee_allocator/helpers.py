@@ -179,6 +179,8 @@ def get_block_by_ts(timestamp: int, chain: str) -> int:
     result = client.execute(query)
     # Sort result by timestamp desc
     result["blocks"].sort(key=lambda x: x["timestamp"], reverse=True)
+    # TODO: Print result for debug:
+    print(result)
     return int(result["blocks"][0]["number"])
 
 
