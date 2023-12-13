@@ -59,6 +59,9 @@ def run_fees(
         pools = core_pools.get(chain.value, None)
         if pools is None:
             continue
+        print("Chain: ", chain.value)
+        print("Timestamp now: ", timestamp_now)
+        print("Timestamp 2 weeks ago: ", timestamp_2_weeks_ago)
         target_blocks[chain.value] = (
             get_block_by_ts(timestamp_now, chain.value),  # Block now
             get_block_by_ts(timestamp_2_weeks_ago, chain.value),  # Block 2 weeks ago

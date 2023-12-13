@@ -14,7 +14,7 @@ from fee_allocator.accounting.recon import recon_and_validate
 from fee_allocator.accounting.settings import Chains
 
 
-DELTA = 1000
+DELTA = 3000
 # TS_NOW = int(datetime.now().timestamp()) - DELTA
 # TS_NOW = 1701907200
 # TS_2_WEEKS_AGO = 1700697600
