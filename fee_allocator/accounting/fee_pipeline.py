@@ -36,6 +36,9 @@ def run_fees(
     """
     # Fetch current core pools:
     core_pools = requests.get(CORE_POOLS_URL).json()
+    core_pools["avalanche"].pop(
+        "0x55bec22f8f6c69137ceaf284d9b441db1b9bfedc000200000000000000000011"
+    )
     # Fetch fee constants:
     fee_constants = requests.get(FEE_CONSTANTS_URL).json()
     # Fetch re-route config:

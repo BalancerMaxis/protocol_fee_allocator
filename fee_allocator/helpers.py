@@ -17,7 +17,7 @@ from gql.transport.requests import log
 from web3 import Web3
 from web3.exceptions import BadFunctionCallOutput
 
-log.setLevel(logging.WARNING)
+log.setLevel(logging.ERROR)
 
 
 @dataclass
@@ -179,8 +179,6 @@ def get_block_by_ts(timestamp: int, chain: str) -> int:
     result = client.execute(query)
     # Sort result by timestamp desc
     result["blocks"].sort(key=lambda x: x["timestamp"], reverse=True)
-    # TODO: Print result for debug:
-    print(result)
     return int(result["blocks"][0]["number"])
 
 
