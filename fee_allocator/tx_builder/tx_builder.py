@@ -128,7 +128,10 @@ def generate_payload(web3: Web3, csv_file: str):
         transfer = copy.deepcopy(TRANSFER)
         transfer["to"] = address_book.extras.tokens.USDC
         transfer["contractInputsValues"]["value"] = str(int(usdc_amount))
+        print("----------------------------------")
+        print(transfer["contractInputsValues"]["value"])
         transfer["contractInputsValues"]["to"] = target
+        print(transfer["contractInputsValues"]["to"])
         tx_list.append(transfer)
         payments += usdc_amount
 
@@ -202,7 +205,7 @@ def generate_payload(web3: Web3, csv_file: str):
         "to"
     ] = address_book.extras.maxiKeepers.veBalFeeInjector
     usdc_trasfer["contractInputsValues"]["value"] = str(
-        usdc.functions.balanceOf(safe).call() - spent_usdc
+        int(usdc.functions.balanceOf(safe).call() - spent_usdc)
     )
     tx_list.append(usdc_trasfer)
     bal_trasfer = TRANSFER
