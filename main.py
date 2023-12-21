@@ -19,7 +19,7 @@ DELTA = 6000
 # TS_NOW = 1701907200
 # TS_2_WEEKS_AGO = 1700697600
 TS_NOW = int(datetime.now().timestamp()) - DELTA
-TS_2_WEEKS_AGO = 1701907200
+TS_2_WEEKS_AGO = 1703116800
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--ts_now", help="Current timestamp", type=int, required=False)
