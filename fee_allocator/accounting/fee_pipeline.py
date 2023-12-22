@@ -39,6 +39,12 @@ def run_fees(
     core_pools["avalanche"].pop(
         "0x55bec22f8f6c69137ceaf284d9b441db1b9bfedc000200000000000000000011"
     )
+    core_pools["polygon"].pop(
+        "0x8159462d255c1d24915cb51ec361f700174cd99400000000000000000000075d"
+    )
+    core_pools["polygon"].pop(
+        "0x65fe9314be50890fb01457be076fafd05ff32b9a000000000000000000000a96"
+    )
     # Fetch fee constants:
     fee_constants = requests.get(FEE_CONSTANTS_URL).json()
     # Fetch re-route config:
