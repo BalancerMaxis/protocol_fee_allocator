@@ -124,7 +124,7 @@ def run_fees(
             collected_fees[chain.value],
             chain.value,
             Decimal(fees_to_distribute[chain.value]),
-            Decimal(fee_constants["min_aura_incentive"]),
+            Decimal(1000),
             Decimal(fee_constants["dao_share_pct"]),
             Decimal(fee_constants["vebal_share_pct"]),
             aura_vebal_share=Decimal(aura_vebal_share),
@@ -132,7 +132,7 @@ def run_fees(
         re_routed_incentives = re_route_incentives(_incentives, chain, reroute_config)
         incentives[chain.value] = re_distribute_incentives(
             re_routed_incentives,
-            Decimal(fee_constants["min_aura_incentive"]),
+            Decimal(1000),
             Decimal(fee_constants["min_vote_incentive_amount"]),
         )
     # Wrap into dataframe and sort by earned fees and store to csv

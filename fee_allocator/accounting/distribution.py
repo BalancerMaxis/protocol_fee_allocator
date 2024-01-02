@@ -22,25 +22,16 @@ def calc_and_split_incentives(
     total_fees = bpt_fees + token_fees
     if not total_fees:
         return {}
-    aura_bal_switch = True
     for pool, data in fees.items():
         pool_fees = data['bpt_token_fee_in_usd'] + data['token_fees_in_usd']
         pool_share = pool_fees / Decimal(total_fees)
         # If aura incentives is less than 500 USDC, we pay all incentives to balancer
         aura_incentives = round(pool_share * fees_to_distr_wo_dao_vebal * aura_vebal_share, 2)
         if aura_incentives <= min_aura_incentive:
-            if aura_bal_switch:
-                aura_incentives = Decimal(0)
-                bal_incentives = round(pool_share * fees_to_distr_wo_dao_vebal, 2)
-                aura_bal_switch = not aura_bal_switch
-            else:
-                aura_incentives = round(pool_share * fees_to_distr_wo_dao_vebal, 2)
-                bal_incentives = Decimal(0)
-                aura_bal_switch = not aura_bal_switch
-
+            aura_incentives = Decimal(0)
+            bal_incentives = round(pool_share * fees_to_distr_wo_dao_vebal, 2)
         else:
-            bal_incentives = round(pool_share * fees_to_distr_wo_dao_vebal * (1 - aura_vebal_share),
-                                   2)
+            bal_incentives = round(pool_share * fees_to_distr_wo_dao_vebal * (1 - aura_vebal_share), 2)
         fees_to_dao = round(pool_share * fees_to_distribute * dao_share, 2)
         fees_to_vebal = round(pool_share * fees_to_distribute * vebal_share, 2)
         # Split fees between aura and bal fees
