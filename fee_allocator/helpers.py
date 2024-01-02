@@ -334,12 +334,12 @@ def fetch_token_price_balgql_timerange(
         for item in result["tokenGetPriceChartData"]
         if end_date_ts >= item["timestamp"] >= start_date_ts
     ]
-    # if token_addr.lower() == "0x6dbf2155b0636cb3fd5359fccefb8a2c02b6cb51":
-    #     return Decimal(0.39)
-    # if token_addr.lower() == "0x93ef1ea305d11a9b2a3ebb9bb4fcc34695292e7d":
-    #     return Decimal(2300)
-    # if token_addr.lower() == "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee":
-    #     return Decimal(2300)
+    if token_addr.lower() == "0x6dbf2155b0636cb3fd5359fccefb8a2c02b6cb51":
+        return Decimal(0.39)
+    if token_addr.lower() == "0x93ef1ea305d11a9b2a3ebb9bb4fcc34695292e7d":
+        return Decimal(2300)
+    if token_addr.lower() == "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee":
+        return Decimal(2300)
     if len(result_slice) == 0:
         return None
     # Sum all prices and divide by number of days
