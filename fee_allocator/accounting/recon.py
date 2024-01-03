@@ -1,4 +1,5 @@
 import datetime
+from typing import Optional
 
 import pandas as pd
 import simplejson as json
@@ -16,6 +17,7 @@ def recon_and_validate(
     fees_to_distribute: dict,
     timestamp_now: int,
     timestamp_2_weeks_ago: int,
+    aura_vebal_share: Optional[Decimal] = Decimal(0.491),
 ) -> None:
     """
     Recon fees collected from the fee pipeline. Store the summary to json file
@@ -70,8 +72,11 @@ def recon_and_validate(
         "balIncentives": round(bal_incentives, 2),
         "feesToDao": round(fees_to_dao, 2),
         "feesToVebal": round(fees_to_vebal, 2),
+        "auravebalShare": round(aura_vebal_share, 2),
         "auraIncentivesPct": round(aura_incentives / all_incentives_sum, 4),
+        "auraIncentivesPctTotal": round(aura_incentives / (aura_incentives + bal_incentives), 4),
         "balIncentivesPct": round(bal_incentives / all_incentives_sum, 4),
+        "balIncentivesPctTotal": round(bal_incentives / (aura_incentives + bal_incentives), 4),
         "feesToDaoPct": round(fees_to_dao / all_incentives_sum, 4),
         "feesToVebalPct": round(fees_to_vebal / all_incentives_sum, 4),
         # UNIX timestamp
