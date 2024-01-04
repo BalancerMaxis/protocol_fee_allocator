@@ -40,7 +40,7 @@ jobs:
         start_timestamp=$(date -d "$start_day 00:00:00" +"%s")
         end_timestamp=$((start_timestamp + 60*60*24*14)) # 2 weeks later
         pip3 install -r requirements.txt
-        python3 main.py --ts_now $end_timestamp --ts_in_the_past $start_timestamp --fees_file_name fees_${date_range_string}.json --output_file_name incentives_${date_range_string}.json
+        python3 main.py --ts_now $end_timestamp --ts_in_the_past $start_timestamp --fees_file_name fees_${date_range_string}.json --output_file_name incentives_${date_range_string}.csv
     - name: Create PR
       id: cpr
       uses: peter-evans/create-pull-request@v5
