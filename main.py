@@ -15,7 +15,6 @@ from fee_allocator.accounting.settings import Chains
 
 
 DELTA = 1000
-# TS_NOW = int(datetime.now().timestamp()) - DELTA
 # TS_NOW = 1703116800
 # TS_2_WEEKS_AGO = 1701907200
 TS_NOW = int(datetime.now().timestamp()) - DELTA
