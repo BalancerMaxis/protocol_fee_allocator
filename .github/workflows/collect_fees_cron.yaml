@@ -36,4 +36,3 @@ jobs:
         pip3 install -r requirements.txt
         python3 main.py
         git commit -m "feat: new fees report from automated run"
-        ## Note that it would be good to change the branch name and have Xeonus update, just easier to understand. 
