@@ -3,8 +3,8 @@ name: Process and run reports for a fee round
 on:
   workflow_dispatch:
     inputs:
-      start_day:
-        description: 'Start date like YYYY-MM-DD, fees will be calcualted for the 2 week period following this 00:00GMT on this day.  It should be on aThursday that during an Aura voting round.'
+      end_day:
+        description: 'End Date of the last voting period like YYYY-MM-DD.  Fees will be calcualted for the 2 week period prior 00:00GMT on this day.  It should be on aThursday that during an Aura voting round.'
         required: true
 
 
@@ -33,8 +33,8 @@ jobs:
         POLYZKEVMNODEURL: ${{ secrets.POLYZKEVMNODEURL }}
       run: |
         pwd
-        start_day=${{ github.event.inputs.start_day }}
-        end_day=$(date -d "$start_day +14 days" +%Y-%m-%d)
+        end_day=${{ github.event.inputs.end_date }}
+        start_day=$(date -d "$end_day -14 days" +%Y-%m-%d)
         date_range_string="${start_day}_${end_day}"
         start_timestamp=$(date -d "$start_day 00:00:00" +"%s")
         end_timestamp=$((start_timestamp + 60*60*24*14)) # 2 weeks later
