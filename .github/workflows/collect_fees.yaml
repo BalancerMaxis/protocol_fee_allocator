@@ -45,9 +45,9 @@ jobs:
       id: cpr
       uses: peter-evans/create-pull-request@v5
       with:
-        commit-message: "feat: new fees report"
-        title: "New Fees Report"
+        commit-message: "task: new fees report ending ${{ github.events.inputs.end_day }}"
+        title: "Biweekly Fee Report ending ${{ github.events.inputs.end_day }}"
         branch: gha-biweekly-fees
         branch-suffix: timestamp
         delete-branch: true
-        labels: "Fees-Report"
+        labels: "Biweekly-Report"
