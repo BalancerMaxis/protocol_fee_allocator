@@ -13,6 +13,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+      with:
+        ref: gha-fees-report
 
     - name: Setup Python 3.9
       uses: actions/setup-python@v2
@@ -33,13 +35,5 @@ jobs:
         pwd
         pip3 install -r requirements.txt
         python3 main.py
-
-    - name: Create PR
-      id: cpr
-      uses: peter-evans/create-pull-request@v5
-      with:
-        commit-message: "feat: new fees report"
-        title: "New Fees Report"
-        branch: gha-fees-report
-        delete-branch: true
-        labels: "Fees-Report"
+        git commit -m "feat: new fees report from automated run"
+        ## Note that it would be good to change the branch name and have Xeonus update, just easier to understand. 
