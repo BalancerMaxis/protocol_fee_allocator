@@ -43,6 +43,7 @@ jobs:
       with:
         commit-message: "feat: new fees report"
         title: "New Fees Report"
-        branch: gha-fees-report
+        branch: gha-biweekly-fees
+        branch-suffix: timestamp
         delete-branch: true
         labels: "Fees-Report"
