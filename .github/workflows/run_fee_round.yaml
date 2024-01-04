@@ -1,20 +1,12 @@
-name: Process Fee report with custom settings
+name: Process and run reports for a fee round
 
 on:
   workflow_dispatch:
     inputs:
-      ts_now:
-        description: 'The end timestamp to run on like 1633459200'
-        required: false
-      ts_in_the_past:
-        description: 'The  start timestamp(in the past) to run on like 1633459200'
-        required: false
-      output_file_name:
-        description: 'The name of the output file that will land in allocations/'
-        required: false
-      fees_file_name:
-        description: 'The name of the fees file that will be read from fees_collected/'
-        required: false
+      end_day:
+        description: 'End Date of the last voting period like YYYY-MM-DD.  Fees will be calcualted for the 2 week period prior 00:00GMT on this day.  It should be on aThursday that during an Aura voting round.'
+        required: true
+
 
 jobs:
   generate_fees_report:
@@ -41,15 +33,20 @@ jobs:
         POLYZKEVMNODEURL: ${{ secrets.POLYZKEVMNODEURL }}
       run: |
         pwd
+        end_day=${{ github.event.inputs.end_day }}
+        start_day=$(date -d "$end_day -14 days" +%Y-%m-%d)
+        date_range_string="${start_day}_${end_day}"
+        start_timestamp=$(date -d "$start_day 00:00:00" +"%s")
+        end_timestamp=$((start_timestamp + 60*60*24*14)) # 2 weeks later
         pip3 install -r requirements.txt
-        python3 main.py --ts_now ${{ github.event.inputs.ts_now }} --ts_in_the_past ${{ github.event.inputs.ts_in_the_past }} --output_file_name ${{ github.event.inputs.output_file_name }} --fees_file_name ${{ github.event.inputs.fees_file_name }}
-
+        python3 main.py --ts_now $end_timestamp --ts_in_the_past $start_timestamp --fees_file_name fees_${date_range_string}.json -output_file_name incentives_${date_range_string}.json
     - name: Create PR
       id: cpr
       uses: peter-evans/create-pull-request@v5
       with:
         commit-message: "feat: new fees report"
         title: "New Fees Report"
-        branch: gha-fees-report
+        branch: gha-biweekly-fees
+        branch-suffix: timestamp
         delete-branch: true
         labels: "Fees-Report"
