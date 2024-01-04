@@ -1,4 +1,4 @@
-name: Process and run fees report
+name: Update Live Core Fees JSON
 
 on:
   workflow_dispatch:

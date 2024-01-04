@@ -36,7 +36,7 @@ jobs:
         start_time=${{ github.event.inputs.start_time }}
         end_time=$((start_time + 60*60*24*14)) # 2 weeks later
         pip3 install -r requirements.txt
-        python3 main.py --ts_now ${{ github.event.inputs.start_time }} --ts_in_the_past ${{ github.event.inputs.end_time }}
+        python3 main.py --ts_now $end_time --ts_in_the_past $start_time
     - name: Create PR
       id: cpr
       uses: peter-evans/create-pull-request@v5
