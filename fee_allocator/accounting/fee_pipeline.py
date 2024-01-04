@@ -132,9 +132,9 @@ def run_fees(
             Decimal(fee_constants["vebal_share_pct"]),
             aura_vebal_share=Decimal(aura_vebal_share),
         )
-        # re_routed_incentives = re_route_incentives(_incentives, chain, reroute_config)
+        re_routed_incentives = re_route_incentives(_incentives, chain, reroute_config)
         incentives[chain.value] = re_distribute_incentives(
-            _incentives,
+            re_routed_incentives,
             Decimal(fee_constants["min_aura_incentive"]),
             Decimal(fee_constants["min_vote_incentive_amount"]),
             aura_vebal_share=Decimal(aura_vebal_share),
