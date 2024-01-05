@@ -145,21 +145,32 @@ def re_distribute_incentives(
             continue
         # Calculate aura and bal incentives percentage
         aura_incentives_pct = _aura_incentives / _total_incentives
-        bal_incentives_pct = _bal_incentives / _total_incentives
         # If aura incentives percentage is less than aura_vebal_share, we need to increase bal incentives
         if aura_incentives_pct >= aura_vebal_share:
             # Calculate how much we need to increase bal incentives
             bal_incentives_to_increase = round(
                 _total_incentives * (aura_incentives_pct - aura_vebal_share), 2)
-            # Increase bal incentives
-            incentives[pool_id]['bal_incentives'] += bal_incentives_to_increase
-            # Decrease aura incentives
-            incentives[pool_id]['aura_incentives'] -= bal_incentives_to_increase
+            # Calculate how much we need to decrease aura incentives but not to go below min aura incentive
+            if _aura_incentives - bal_incentives_to_increase <= min_aura_incentive:
+                # If aura incentives are less than min aura incentive after decreasing, we need to calculate
+                # how much we need to decrease aura incentives to min aura incentive
+                aura_incentives_to_decrease = _aura_incentives - min_aura_incentive
+                # Decrease aura incentives to min aura incentive
+                incentives[pool_id]['aura_incentives'] -= aura_incentives_to_decrease
+                incentives[pool_id]['bal_incentives'] += aura_incentives_to_decrease
+            else:
+                # Increase bal incentives
+                incentives[pool_id]['bal_incentives'] += bal_incentives_to_increase
+                # Decrease aura incentives
+                incentives[pool_id]['aura_incentives'] -= bal_incentives_to_increase
         # If aura incentives percentage is more than aura_vebal_share, we need to increase aura incentives
         else:
             # Calculate how much we need to increase aura incentives
             aura_incentives_to_increase = round(
                 _total_incentives * (aura_vebal_share - aura_incentives_pct), 2)
+            # Only increase aura incentives if it's more than min aura incentive
+            if _aura_incentives + aura_incentives_to_increase < min_aura_incentive:
+                continue
             # Increase aura incentives
             incentives[pool_id]['aura_incentives'] += aura_incentives_to_increase
             # Decrease bal incentives

@@ -238,4 +238,4 @@ if __name__ == "__main__":
             "https://eth-mainnet.alchemyapi.io/v2/xBBFbqEE-Fd2pfXFv1VeNqdGZrt3UFis"
         )
     )
-    generate_payload(web3, "../allocations/output_for_msig/2023-12-21.csv")
+    generate_payload(web3, "../allocations/output_for_msig/2024-01-04.csv")
