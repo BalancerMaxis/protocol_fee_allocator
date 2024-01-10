@@ -17,7 +17,7 @@ def recon_and_validate(
     fees_to_distribute: dict,
     timestamp_now: int,
     timestamp_2_weeks_ago: int,
-    aura_vebal_share: Optional[Decimal] = Decimal(0.491),
+    aura_vebal_share: Optional[Decimal] = Decimal(0.506),
 ) -> None:
     """
     Recon fees collected from the fee pipeline. Store the summary to json file
