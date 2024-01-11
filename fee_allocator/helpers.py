@@ -10,6 +10,7 @@ from typing import List
 from typing import Optional
 from typing import Union
 
+import requests
 from gql import Client
 from gql import gql
 from gql.transport.requests import RequestsHTTPTransport
@@ -151,6 +152,7 @@ BALANCER_CONTRACTS = {
     },
 }
 
+HH_AURA_URL = "https://api.hiddenhand.finance/proposal/aura"
 
 def get_abi(contract_name: str) -> Union[Dict, List[Dict]]:
     project_root_dir = os.path.abspath(os.path.dirname(__file__))
@@ -399,3 +401,17 @@ def fetch_all_pools_info() -> List[Dict]:
     query = gql(BAL_GET_VOTING_LIST_QUERY)
     result = client.execute(query)
     return result["veBalGetVotingList"]
+
+
+def fetch_hh_aura_bribs() -> List[Dict]:
+    """
+    Fetch GET bribes from hidden hand api
+    """
+    res = requests.get(HH_AURA_URL)
+    if not res.ok:
+        raise ValueError("Error fetching bribes from hidden hand api")
+
+    response_parsed = res.json()
+    if response_parsed["error"]:
+        raise ValueError("HH API returned error")
+    return response_parsed["data"]

@@ -1,15 +1,13 @@
 import datetime
+import os
+from decimal import Decimal
+from typing import Dict
 from typing import Optional
 
 import pandas as pd
 import simplejson as json
-import os
-from decimal import Decimal
-
-from web3 import Web3
 
 from fee_allocator.accounting import PROJECT_ROOT
-from fee_allocator.helpers import fetch_all_pools_info
 
 
 def recon_and_validate(
@@ -107,7 +105,7 @@ def recon_and_validate(
         json.dump(existing_data, f, use_decimal=True, indent=2)
 
 
-def generate_and_save_input_csv(fees: dict, period_ends: int) -> None:
+def generate_and_save_input_csv(fees: dict, period_ends: int, mapped_pools_info: Dict) -> None:
     """
     Function that generates and saves csv in format:
     target_root_gauge,platform,amount_of_incentives
@@ -128,14 +126,7 @@ def generate_and_save_input_csv(fees: dict, period_ends: int) -> None:
     # Don't generate csv if there are no incentives
     if all_incentives_sum == 0:
         return
-    # First, fetch all gauges info:
-    pools_info = fetch_all_pools_info()
-    # Then map pool_id to root gauge address
-    mapped_pools_info = {}
-    for pool in pools_info:
-        mapped_pools_info[pool["id"]] = Web3.to_checksum_address(
-            pool["gauge"]["address"]
-        )
+
     output = []
     for pool_id, fee_item in fees.items():
         # Aura incentives
