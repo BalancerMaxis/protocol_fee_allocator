@@ -81,7 +81,8 @@ def main() -> None:
         Web3.HTTPProvider(os.environ["POLYZKEVMNODEURL"])
     )
     collected_fees = run_fees(
-        web3_instances, ts_now, ts_in_the_past, output_file_name, fees_to_distribute
+        web3_instances, ts_now, ts_in_the_past, output_file_name, fees_to_distribute,
+        mapped_pools_info,
     )
     recon_and_validate(collected_fees, fees_to_distribute, ts_now, ts_in_the_past)
     generate_and_save_input_csv(collected_fees, ts_now, mapped_pools_info)

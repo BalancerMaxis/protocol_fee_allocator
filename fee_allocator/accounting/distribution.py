@@ -1,3 +1,4 @@
+import math
 from decimal import Decimal
 from typing import Dict
 from typing import List
@@ -36,14 +37,13 @@ def calc_and_split_incentives(
         # If pool has already existing X aura incentives, then it gets precise split of incentives between aura and bal
         # as aura_bal_ratio
         cumulative_aura_incentives = Decimal(0)
-        if existing_aura_bribs and mapped_pools_info:
-            # Lookup for specific pool in existing aura bribes
-            for aura_brib in existing_aura_bribs:
-                if aura_brib['target'] == mapped_pools_info[pool]:
-                    # Calculate cumulative aura incentives for this pool
-                    cumulative_aura_incentives = Decimal(sum([x['value'] for x in aura_brib['bribes']]))
+        for aura_brib in existing_aura_bribs:
+            if aura_brib['proposal'] == mapped_pools_info[pool].lower():
+                # Calculate cumulative aura incentives for this pool
+                cumulative_aura_incentives = Decimal(sum([x['value'] for x in aura_brib['bribes']]))
         # If cumulative aura incentives are more than X USDC, we distribute precisely between aura and bal
         if cumulative_aura_incentives >= MIN_EXISTING_AURA_BRIBE:
+            print(f'Pool {pool} has {cumulative_aura_incentives} aura incentives! Allocating precisely...')
             bal_incentives = round(total_incentive - aura_incentives, 2)
         else:
             if aura_incentives <= min_aura_incentive:
@@ -137,6 +137,10 @@ def re_distribute_incentives(
             continue
         # Calculate aura and bal incentives percentage
         aura_incentives_pct = _aura_incentives / _total_incentives
+        # If aura incentives pct is approx equal to aura_vebal_share, we don't need to do anything
+        if math.isclose(aura_incentives_pct, aura_vebal_share, rel_tol=1e-03, abs_tol=1e-03):
+            print(f"Pool {pool_id} aura incentives pct is approx equal to aura_vebal_share, skipping...")
+            continue
         # If aura incentives percentage is less than aura_vebal_share, we need to increase bal incentives
         if aura_incentives_pct >= aura_vebal_share:
             # Calculate how much we need to increase bal incentives

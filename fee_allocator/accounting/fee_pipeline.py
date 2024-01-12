@@ -33,6 +33,7 @@ def run_fees(
         timestamp_2_weeks_ago: int,
         output_file_name: str,
         fees_to_distribute: dict,
+        mapped_pools_info: dict,
 ) -> dict:
     """
     This function is used to run the fee allocation process
@@ -123,6 +124,8 @@ def run_fees(
             Decimal(fee_constants["dao_share_pct"]),
             Decimal(fee_constants["vebal_share_pct"]),
             aura_vebal_share=Decimal(aura_vebal_share),
+            existing_aura_bribs=existing_aura_bribs,
+            mapped_pools_info=mapped_pools_info,
         )
         re_routed_incentives = re_route_incentives(_incentives, chain, reroute_config)
         incentives[chain.value] = re_distribute_incentives(
