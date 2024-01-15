@@ -414,9 +414,4 @@ def fetch_hh_aura_bribs() -> List[Dict]:
     response_parsed = res.json()
     if response_parsed["error"]:
         raise ValueError("HH API returned error")
-    # # Return stub json in test_data dir
-    # project_root_dir = os.path.abspath(os.path.dirname(__file__))
-    # with open(f"{project_root_dir}/test_data/scratch_25.json") as f:
-    #     payload = json.load(f)
-    # return payload["data"]
     return response_parsed["data"]
