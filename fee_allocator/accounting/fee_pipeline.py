@@ -123,9 +123,10 @@ def run_fees(
             Decimal(fee_constants["min_aura_incentive"]),
             Decimal(fee_constants["dao_share_pct"]),
             Decimal(fee_constants["vebal_share_pct"]),
-            aura_vebal_share=Decimal(aura_vebal_share),
-            existing_aura_bribs=existing_aura_bribs,
-            mapped_pools_info=mapped_pools_info,
+            Decimal(fee_constants["min_existing_aura_incentive"]),
+            Decimal(aura_vebal_share),
+            existing_aura_bribs,
+            mapped_pools_info,
         )
         re_routed_incentives = re_route_incentives(_incentives, chain, reroute_config)
         incentives[chain.value] = re_distribute_incentives(

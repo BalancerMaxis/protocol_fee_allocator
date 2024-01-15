@@ -2,18 +2,16 @@ import math
 from decimal import Decimal
 from typing import Dict
 from typing import List
-from typing import Optional
 
 from fee_allocator.accounting.settings import Chains
-
-MIN_EXISTING_AURA_BRIBE = Decimal(500)
 
 
 def calc_and_split_incentives(
         fees: Dict, chain: str, fees_to_distribute: Decimal,
         min_aura_incentive: Decimal, dao_share: Decimal, vebal_share: Decimal,
-        aura_vebal_share: Decimal, existing_aura_bribs: Optional[List[Dict]] = None,
-        mapped_pools_info: Optional[Dict] = None
+        min_existing_aura_incentive: Decimal, aura_vebal_share: Decimal,
+        existing_aura_bribs: List[Dict],
+        mapped_pools_info: Dict,
 ) -> Dict[str, Dict]:
     """
     Calculate and split incentives between aura and balancer pools
@@ -42,7 +40,7 @@ def calc_and_split_incentives(
                 # Calculate cumulative aura incentives for this pool
                 cumulative_aura_incentives = Decimal(sum([x['value'] for x in aura_brib['bribes']]))
         # If cumulative aura incentives are more than X USDC, we distribute precisely between aura and bal
-        if cumulative_aura_incentives >= MIN_EXISTING_AURA_BRIBE:
+        if cumulative_aura_incentives >= min_existing_aura_incentive:
             print(f'Pool {pool} has {cumulative_aura_incentives} aura incentives! Allocating precisely...')
             bal_incentives = round(total_incentive - aura_incentives, 2)
         else:
