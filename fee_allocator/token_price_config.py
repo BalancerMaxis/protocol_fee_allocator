@@ -11,6 +11,7 @@ def get_price(address: str) -> Optional[Decimal]:
     Try to get price from config. Address can be in whatever format, this function will try to convert it to checksum
     or to .lower() format
     """
+    print(f"Price for token address {address} was not found in the API, fetching from config...")
     project_root = os.path.dirname(__file__)
     pricing_config = json.load(open(os.path.join(project_root, "pricing.json")))
     price = pricing_config.get(address)
@@ -19,4 +20,5 @@ def get_price(address: str) -> Optional[Decimal]:
 
     if price is None:
         price = pricing_config.get(Web3.to_checksum_address(address))
+    print(f"!!!Price for token address {address} was found in the config!!!")
     return price
