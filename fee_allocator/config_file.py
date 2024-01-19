@@ -1,4 +1,5 @@
 import os
+from decimal import Decimal
 from enum import Enum
 
 import requests

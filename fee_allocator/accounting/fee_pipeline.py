@@ -1,6 +1,8 @@
 import datetime
 import os
 from decimal import Decimal
+from typing import Dict
+from typing import List
 
 import pandas as pd
 import requests
@@ -19,17 +21,19 @@ from fee_allocator.accounting.settings import Chains
 from fee_allocator.accounting.settings import FEE_CONSTANTS_URL
 from fee_allocator.accounting.settings import REROUTE_CONFIG_URL
 from fee_allocator.helpers import calculate_aura_vebal_share
+from fee_allocator.helpers import fetch_hh_aura_bribs
 from fee_allocator.helpers import get_balancer_pool_snapshots
 from fee_allocator.helpers import get_block_by_ts
 from fee_allocator.helpers import get_twap_bpt_price
 
 
 def run_fees(
-    web3_instances: Munch[Web3],
-    timestamp_now: int,
-    timestamp_2_weeks_ago: int,
-    output_file_name: str,
-    fees_to_distribute: dict,
+        web3_instances: Munch[Web3],
+        timestamp_now: int,
+        timestamp_2_weeks_ago: int,
+        output_file_name: str,
+        fees_to_distribute: dict,
+        mapped_pools_info: dict,
 ) -> dict:
     """
     This function is used to run the fee allocation process
@@ -54,6 +58,7 @@ def run_fees(
     logger.info(
         f"veBAL aura share at block {_target_mainnet_block}: {aura_vebal_share}"
     )
+    existing_aura_bribs: List[Dict] = fetch_hh_aura_bribs()
     # Collect all BPT prices:
     for chain in Chains:
         pools = core_pools.get(chain.value, None)
@@ -118,7 +123,10 @@ def run_fees(
             Decimal(fee_constants["min_aura_incentive"]),
             Decimal(fee_constants["dao_share_pct"]),
             Decimal(fee_constants["vebal_share_pct"]),
-            aura_vebal_share=Decimal(aura_vebal_share),
+            Decimal(fee_constants["min_existing_aura_incentive"]),
+            Decimal(aura_vebal_share),
+            existing_aura_bribs,
+            mapped_pools_info,
         )
         re_routed_incentives = re_route_incentives(_incentives, chain, reroute_config)
         incentives[chain.value] = re_distribute_incentives(
