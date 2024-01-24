@@ -31,7 +31,7 @@ class PoolBalance:
 
 
 CHAIN_TO_CHAIN_ID_MAP = {
-    "mainnet": 1,
+    "mainnet": "1",
     "arbitrum": "42161",
     "polygon": "137",
     "optimism": "10",
@@ -153,6 +153,7 @@ BALANCER_CONTRACTS = {
 }
 
 HH_AURA_URL = "https://api.hiddenhand.finance/proposal/aura"
+
 
 def get_abi(contract_name: str) -> Union[Dict, List[Dict]]:
     project_root_dir = os.path.abspath(os.path.dirname(__file__))
@@ -286,10 +287,11 @@ def fetch_token_price_balgql(
     """
     start_date_ts = int(start_date.strftime("%s"))
     end_date_ts = int((start_date - timedelta(days=twap_days)).strftime("%s"))
+    print(f"chain id: {CHAIN_TO_CHAIN_ID_MAP[chain]}")
     transport = RequestsHTTPTransport(
         url=BAL_GQL_URL,
         retries=2,
-        headers={"chainId": CHAIN_TO_CHAIN_ID_MAP[chain]} if chain != "mainnet" else {},
+        headers={"chainId": CHAIN_TO_CHAIN_ID_MAP[chain]}
     )
     client = Client(transport=transport, fetch_schema_from_transport=True)
     query = gql(BAL_GQL_QUERY.format(token_addr=token_addr.lower()))
@@ -323,7 +325,7 @@ def fetch_token_price_balgql_timerange(
     transport = RequestsHTTPTransport(
         url=BAL_GQL_URL,
         retries=2,
-        headers={"chainId": CHAIN_TO_CHAIN_ID_MAP[chain]} if chain != "mainnet" else {},
+        headers={"chainId": CHAIN_TO_CHAIN_ID_MAP[chain]},
     )
     client = Client(transport=transport, fetch_schema_from_transport=True)
     query = gql(BAL_GQL_QUERY.format(token_addr=token_addr.lower()))
