@@ -13,7 +13,7 @@ FEES_CONSTANTS = requests.get(
 ).json()
 
 CORE_POOLS = requests.get(
-    "https://raw.githubusercontent.com/BalancerMaxis/multisig-ops/main/config/core_pools.json"
+    "https://raw.githubusercontent.com/BalancerMaxis/bal_addresses/main/outputs/core_pools.json"
 ).json()
 
 REROUTE_CONFIG = requests.get(
