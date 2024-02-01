@@ -2,6 +2,7 @@ import copy
 import csv
 import json
 from datetime import date
+import os
 
 import requests
 from bal_addresses import AddrBook
@@ -26,15 +27,30 @@ query ($proposal_id: String) {
 }
 """
 
-with open("templates/bribe_balancer.json") as f:
+module_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Load bribe_balancer.json
+bribe_balancer_path = os.path.join(module_dir, "templates/bribe_balancer.json")
+with open(bribe_balancer_path) as f:
     PAYLOAD = json.load(f)
-with open("templates/bribe_balancer.json") as f:
+
+# Load transactions from bribe_balancer.json
+with open(bribe_balancer_path) as f:
     BALANCER_BRIB = json.load(f)["transactions"][0]
-with open("templates/bribe_aura.json") as f:
+
+# Load transactions from bribe_aura.json
+bribe_aura_path = os.path.join(module_dir, "templates/bribe_aura.json")
+with open(bribe_aura_path) as f:
     AURA_BRIB = json.load(f)["transactions"][0]
-with open("templates/approve.json") as f:
+
+# Load approve.json
+approve_path = os.path.join(module_dir, "templates/approve.json")
+with open(approve_path) as f:
     APPROVE = json.load(f)
-with open("templates/erc20_transfer.json") as f:
+
+# Load erc20_transfer.json
+transfer_path = os.path.join(module_dir, "templates/erc20_transfer.json")
+with open(transfer_path) as f:
     TRANSFER = json.load(f)
 
 
