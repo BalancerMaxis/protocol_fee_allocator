@@ -159,10 +159,13 @@ def generate_and_save_input_csv(fees: dict, period_ends: int, mapped_pools_info:
 
     # Generate datetime from timestamp
     datetime_file_header = datetime.datetime.fromtimestamp(period_ends).date()
+    filename =  f"fee_allocator/allocations/output_for_msig/{datetime_file_header}.csv"
+
     df.to_csv(
         os.path.join(
             PROJECT_ROOT,
-            f"fee_allocator/allocations/output_for_msig/{datetime_file_header}.csv",
+            filename,
         ),
         index=False,
     )
+    return filename
