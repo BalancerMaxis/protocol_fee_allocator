@@ -240,8 +240,6 @@ def generate_payload(web3: Web3, csv_file: str):
     payload["transactions"] = tx_list
     # Load bribe_balancer.json
     output_file_path = os.path.join(module_dir, f"transactions/{today}.json")
-    with open(bribe_balancer_path) as f:
-        PAYLOAD = json.load(f)
     with open(output_file_path, "w") as tx_file:
         json.dump(payload, tx_file)
     print(f"balance: {usdc.functions.balanceOf(safe).call()}")
