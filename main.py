@@ -13,6 +13,7 @@ from fee_allocator.accounting.recon import generate_and_save_input_csv
 from fee_allocator.accounting.recon import recon_and_validate
 from fee_allocator.accounting.settings import Chains
 from fee_allocator.helpers import fetch_all_pools_info
+from fee_allocator.tx_builder.tx_builder import generate_payload
 
 DELTA = 1000
 # TS_NOW = 1704326400
@@ -41,6 +42,7 @@ def main() -> None:
     # Get from input params or use default
     ts_now = parser.parse_args().ts_now or TS_NOW
     ts_in_the_past = parser.parse_args().ts_in_the_past or TS_2_WEEKS_AGO
+    print(f"\n\nRunning  from timestamps {ts_in_the_past} to {ts_now}")
     output_file_name = parser.parse_args().output_file_name or "current_fees.csv"
     fees_file_name = parser.parse_args().fees_file_name or "current_fees_collected.json"
     fees_path = os.path.join(ROOT, "fee_allocator", "fees_collected", fees_file_name)
@@ -85,7 +87,8 @@ def main() -> None:
         mapped_pools_info,
     )
     recon_and_validate(collected_fees, fees_to_distribute, ts_now, ts_in_the_past)
-    generate_and_save_input_csv(collected_fees, ts_now, mapped_pools_info)
+    csvfile = generate_and_save_input_csv(collected_fees, ts_now, mapped_pools_info)
+    generate_payload(web3_instances["mainnet"], csvfile)
 
 
 if __name__ == "__main__":
