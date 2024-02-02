@@ -49,7 +49,12 @@ def main() -> None:
     pools_info = fetch_all_pools_info()
     # Then map pool_id to root gauge address
     mapped_pools_info = {}
+
     for pool in pools_info:
+        # Check if the gauge is not killed
+        if pool["gauge"]["isKilled"]:
+            print(f'{pool["id"]} gauge:{pool["gauge"]["address"]} is killed, skipping')
+            continue
         mapped_pools_info[pool["id"]] = Web3.to_checksum_address(
             pool["gauge"]["address"]
         )
