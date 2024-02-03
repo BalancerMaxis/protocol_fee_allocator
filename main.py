@@ -93,7 +93,7 @@ def main() -> None:
     )
     recon_and_validate(collected_fees, fees_to_distribute, ts_now, ts_in_the_past)
     csvfile = generate_and_save_input_csv(collected_fees, ts_now, mapped_pools_info)
-    if output_file_name is not "current_fees.csv":
+    if output_file_name != "current_fees.csv":
         generate_payload(web3_instances["mainnet"], csvfile)
 
 if __name__ == "__main__":
