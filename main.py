@@ -63,7 +63,7 @@ def main() -> None:
     # Get from input params or use default
     ts_now = parser.parse_args().ts_now or TS_NOW
     ts_in_the_past = parser.parse_args().ts_in_the_past or TS_2_WEEKS_AGO
-    print(f"\n\nRunning  from timestamps {ts_in_the_past} to {ts_now}")
+    print(f"\n\n\n------\nRunning  from timestamps {ts_in_the_past} to {ts_now}\n------\n\n\n")
     output_file_name = parser.parse_args().output_file_name or "current_fees.csv"
     fees_file_name = parser.parse_args().fees_file_name or "current_fees_collected.json"
     fees_path = os.path.join(ROOT, "fee_allocator", "fees_collected", fees_file_name)
