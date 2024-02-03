@@ -31,16 +31,16 @@ def get_last_thursday_odd_week():
     timedelta_to_last_thursday = timedelta(days=days_until_thursday + 7 * weeks_until_next_odd_week)
 
     # Calculate the timestamp of the last Thursday at 00:00 UTC
-    last_thursday_timestamp = (current_datetime - timedelta_to_last_thursday).replace(hour=0, minute=0, second=0, microsecond=0)
+    last_thursday_odd_utc = (current_datetime - timedelta_to_last_thursday).replace(hour=0, minute=0, second=0, microsecond=0)
 
-    return last_thursday_timestamp.timestamp()
+    return last_thursday_odd_utc
 
 now = datetime.utcnow()
 DELTA = 1000
 # TS_NOW = 1704326400
 # TS_2_WEEKS_AGO = 1703116800
 TS_NOW = int(now.timestamp()) - DELTA
-TS_2_WEEKS_AGO = get_last_thursday_odd_week().timestamp()
+TS_2_WEEKS_AGO = int(get_last_thursday_odd_week().timestamp())
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--ts_now", help="Current timestamp", type=int, required=False)
