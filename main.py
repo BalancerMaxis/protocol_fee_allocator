@@ -1,7 +1,8 @@
 import argparse
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
+import pytz
 
 from dotenv import load_dotenv
 from munch import Munch
@@ -15,11 +16,31 @@ from fee_allocator.accounting.settings import Chains
 from fee_allocator.helpers import fetch_all_pools_info
 from fee_allocator.tx_builder.tx_builder import generate_payload
 
+def get_last_thursday_odd_week():
+    # Get the current UTC date and time
+    current_datetime = datetime.utcnow().replace(tzinfo=pytz.utc)
+
+    # Calculate the difference between the current weekday and Thursday (where Monday is 0 and Sunday is 6)
+    days_until_thursday = (current_datetime.weekday() - 3) % 7
+
+    # Check if the current week is odd
+    is_odd_week = current_datetime.isocalendar()[1] % 2 == 1
+
+    # Calculate the final timedelta to go back to the last Thursday on an odd week
+    weeks_until_next_odd_week = 0 if is_odd_week else 1
+    timedelta_to_last_thursday = timedelta(days=days_until_thursday + 7 * weeks_until_next_odd_week)
+
+    # Calculate the timestamp of the last Thursday at 00:00 UTC
+    last_thursday_timestamp = (current_datetime - timedelta_to_last_thursday).replace(hour=0, minute=0, second=0, microsecond=0)
+
+    return last_thursday_timestamp.timestamp()
+
+now = datetime.utcnow()
 DELTA = 1000
 # TS_NOW = 1704326400
 # TS_2_WEEKS_AGO = 1703116800
-TS_NOW = int(datetime.now().timestamp()) - DELTA
-TS_2_WEEKS_AGO = 1706745600
+TS_NOW = int(now.timestamp()) - DELTA
+TS_2_WEEKS_AGO = get_last_thursday_odd_week()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--ts_now", help="Current timestamp", type=int, required=False)
