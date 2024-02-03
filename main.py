@@ -40,7 +40,7 @@ DELTA = 1000
 # TS_NOW = 1704326400
 # TS_2_WEEKS_AGO = 1703116800
 TS_NOW = int(now.timestamp()) - DELTA
-TS_2_WEEKS_AGO = get_last_thursday_odd_week()
+TS_2_WEEKS_AGO = get_last_thursday_odd_week().timestamp()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--ts_now", help="Current timestamp", type=int, required=False)
