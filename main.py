@@ -17,21 +17,29 @@ from fee_allocator.helpers import fetch_all_pools_info
 from fee_allocator.tx_builder.tx_builder import generate_payload
 
 def get_last_thursday_odd_week():
-    # Get the current UTC date and time
+    # Use the current UTC date and time
     current_datetime = datetime.utcnow().replace(tzinfo=pytz.utc)
 
     # Calculate the difference between the current weekday and Thursday (where Monday is 0 and Sunday is 6)
-    days_until_thursday = (current_datetime.weekday() - 3) % 7
+    days_since_thursday = (current_datetime.weekday() - 3) % 7
 
-    # Check if the current week is odd
-    is_odd_week = current_datetime.isocalendar()[1] % 2 == 1
+    # Calculate the date of the most recent Thursday
+    most_recent_thursday = current_datetime - timedelta(days=days_since_thursday)
 
-    # Calculate the final timedelta to go back to the last Thursday on an odd week
-    weeks_until_next_odd_week = 0 if is_odd_week else 1
-    timedelta_to_last_thursday = timedelta(days=days_until_thursday + 7 * weeks_until_next_odd_week)
+    # Check if the week of the most recent Thursday is odd
+    is_odd_week = most_recent_thursday.isocalendar()[1] % 2 == 1
+
+    # If it's not an odd week or we are exactly on Thursday but need to check if the week before was odd
+    if not is_odd_week or (days_since_thursday == 0 and (most_recent_thursday - timedelta(weeks=1)).isocalendar()[1] % 2 == 1):
+        # Go back one more week if it's not an odd week
+        most_recent_thursday -= timedelta(weeks=1)
+
+    # Ensure the Thursday chosen is in an odd week
+    if most_recent_thursday.isocalendar()[1] % 2 == 0:
+        most_recent_thursday -= timedelta(weeks=1)
 
     # Calculate the timestamp of the last Thursday at 00:00 UTC
-    last_thursday_odd_utc = (current_datetime - timedelta_to_last_thursday).replace(hour=0, minute=0, second=0, microsecond=0)
+    last_thursday_odd_utc = most_recent_thursday.replace(hour=0, minute=0, second=0, microsecond=0)
 
     return last_thursday_odd_utc
 
