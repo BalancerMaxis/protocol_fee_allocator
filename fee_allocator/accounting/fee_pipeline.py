@@ -28,12 +28,12 @@ from fee_allocator.helpers import get_twap_bpt_price
 
 
 def run_fees(
-        web3_instances: Munch[Web3],
-        timestamp_now: int,
-        timestamp_2_weeks_ago: int,
-        output_file_name: str,
-        fees_to_distribute: dict,
-        mapped_pools_info: dict,
+    web3_instances: Munch[Web3],
+    timestamp_now: int,
+    timestamp_2_weeks_ago: int,
+    output_file_name: str,
+    fees_to_distribute: dict,
+    mapped_pools_info: dict,
 ) -> dict:
     """
     This function is used to run the fee allocation process
@@ -61,6 +61,10 @@ def run_fees(
     existing_aura_bribs: List[Dict] = fetch_hh_aura_bribs()
     # Collect all BPT prices:
     for chain in Chains:
+        # confirm fees for this chain are > 0
+        if Decimal(fees_to_distribute[chain.value]) <= 0:
+            continue
+
         pools = core_pools.get(chain.value, None)
         if pools is None:
             continue
