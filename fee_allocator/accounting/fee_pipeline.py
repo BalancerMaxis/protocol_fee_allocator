@@ -145,7 +145,7 @@ def run_fees(
         **incentives[Chains.POLYGON.value],
         **incentives[Chains.BASE.value],
         **incentives[Chains.AVALANCHE.value],
-        **incentives.[Chains.GNOSIS.value],
+        **incentives[Chains.GNOSIS.value],
         **incentives.get(Chains.ZKEVM.value),
     }
     joint_incentives_df = pd.DataFrame.from_dict(joint_incentives_data, orient="index")
