@@ -17,8 +17,7 @@ Once everything checks out, create a json file named fees_{start_date}_{end_date
     "polygon": 0.00,
     "base": 0.00,
     "gnosis": 0.00,
-    "avalanche": 0.00,
-    "zkevm": 0.00
+    "avalanche": 0.00
 }
 ```
 
