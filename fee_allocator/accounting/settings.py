@@ -4,9 +4,9 @@ from munch import Munch
 
 
 class Chains(Enum):
+    ARBITRUM = "arbitrum"
     POLYGON = "polygon"
     MAINNET = "mainnet"
-    ARBITRUM = "arbitrum"
     # OPTIMISM = "optimism"
     GNOSIS = "gnosis"
     AVALANCHE = "avalanche"
