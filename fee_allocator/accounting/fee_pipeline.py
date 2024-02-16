@@ -62,10 +62,7 @@ def run_fees(
     # Collect all BPT prices:
     for chain in Chains:
         # confirm fees for this chain are > 0
-        try:
-            if Decimal(fees_to_distribute[chain.value]) <= 0:
-                continue
-        except KeyError:
+        if Decimal(fees_to_distribute[chain.value]) <= 0:
             continue
 
         pools = core_pools.get(chain.value, None)
