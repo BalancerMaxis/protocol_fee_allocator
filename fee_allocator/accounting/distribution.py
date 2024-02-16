@@ -184,7 +184,8 @@ def re_route_incentives(
         return incentives
     for pool_id, _data in incentives.items():
         ## Note that pools may be added to the reroute config before their gauges are added.
-        if pool_id in reroute[chain.value] and pool_id in list(incentives[reroute[chain.value]].keys()):
+        ## Note that they may need to be added to the core whitelist if they are  under the AUM limit for rerouting to work
+        if pool_id in reroute[chain.value] and reroute[chain.value][pool_id] in incentives.keys():
             # Re route everything to destination pool and set source pool incentives to 0
             incentives[reroute[chain.value][pool_id]]['aura_incentives'] += _data['aura_incentives']
             incentives[reroute[chain.value][pool_id]]['bal_incentives'] += _data['bal_incentives']
