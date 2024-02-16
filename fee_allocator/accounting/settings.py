@@ -11,8 +11,7 @@ class Chains(Enum):
     GNOSIS = "gnosis"
     AVALANCHE = "avalanche"
     BASE = "base"
-    ## zkEVM RPC is unstable and we are currently not sweeping fees.  Uncomment this to run on zkevm
-    # ZKEVM = "zkevm"
+    ZKEVM = "zkevm"
 
 
 FEE_CONSTANTS_URL = (
