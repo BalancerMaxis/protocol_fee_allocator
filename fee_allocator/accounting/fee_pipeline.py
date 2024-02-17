@@ -64,6 +64,9 @@ def run_fees(
         pools = core_pools.get(chain.value, None)
         if pools is None:
             continue
+        if chain.value == Chains.ZKEVM.value:
+            print("SKIPPING ZKEVM DUE TO RPC ISSUES, CHANGE ME WHEN FIXED!")
+            continue
         target_blocks[chain.value] = (
             get_block_by_ts(timestamp_now, chain.value),  # Block now
             get_block_by_ts(timestamp_2_weeks_ago, chain.value),  # Block 2 weeks ago
@@ -142,8 +145,8 @@ def run_fees(
         **incentives[Chains.POLYGON.value],
         **incentives[Chains.BASE.value],
         **incentives[Chains.AVALANCHE.value],
-        **incentives.get(Chains.GNOSIS.value),
-        **incentives.get(Chains.ZKEVM.value),
+        **incentives[Chains.GNOSIS.value],
+        **incentives.get(Chains.ZKEVM.value, {})
     }
     joint_incentives_df = pd.DataFrame.from_dict(joint_incentives_data, orient="index")
 

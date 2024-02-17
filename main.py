@@ -99,22 +99,28 @@ def main() -> None:
     web3_instances[Chains.ARBITRUM.value] = Web3(
         Web3.HTTPProvider(os.environ["ARBNODEURL"])
     )
-    web3_instances[Chains.GNOSIS.value] = Web3(
-        Web3.HTTPProvider(
-            os.environ["GNOSISNODEURL"],
-            request_kwargs={
-                "headers": {"Authorization": f"Bearer {os.environ['GNOSIS_API_KEY']}"}
-            },
+
+    try:
+        web3_instances[Chains.GNOSIS.value] = Web3(
+            Web3.HTTPProvider(
+                os.environ["GNOSISNODEURL"],
+                request_kwargs={
+                    "headers": {"Authorization": f"Bearer {os.environ['GNOSIS_API_KEY']}"}
+                },
+            )
         )
-    )
+    except KeyError:
+        print("NO gnosis key found using default that may be broken")
+        web3_instances[Chains.GNOSIS.value] = Web3.HTTPProvider("https://gnosis.publicnode.com")
+
     web3_instances[Chains.BASE.value] = Web3(
-        Web3.HTTPProvider(os.environ["BASENODEURL"])
+        Web3.HTTPProvider(os.environ.get("BASENODEURL","https://base.llamarpc.com"))
     )
     web3_instances[Chains.AVALANCHE.value] = Web3(
-        Web3.HTTPProvider(os.environ["AVALANCHENODEURL"])
+        Web3.HTTPProvider(os.environ.get("AVALANCHENODEURL","https://rpc.ankr.com/avalanche"))
     )
     web3_instances[Chains.ZKEVM.value] = Web3(
-        Web3.HTTPProvider(os.environ["POLYZKEVMNODEURL"])
+        Web3.HTTPProvider(os.environ.get("POLYZKEVMNODEURL", "https://zkevm-rpc.com"))
     )
     collected_fees = run_fees(
         web3_instances, ts_now, ts_in_the_past, output_file_name, fees_to_distribute,
