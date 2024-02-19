@@ -36,7 +36,7 @@ def calc_and_split_incentives(
         # as aura_bal_ratio
         cumulative_aura_incentives = Decimal(0)
         for aura_brib in existing_aura_bribs:
-            if aura_brib['proposal'] == mapped_pools_info[pool].lower():
+            if aura_brib.get("proposal") == mapped_pools_info[pool].lower():
                 # Calculate cumulative aura incentives for this pool
                 cumulative_aura_incentives = Decimal(sum([x['value'] for x in aura_brib['bribes']]))
         # If cumulative aura incentives are more than X USDC, we distribute precisely between aura and bal
