@@ -17,7 +17,7 @@ class Chains(Enum):
 FEE_CONSTANTS_URL = (
     "https://github.com/BalancerMaxis/multisig-ops/blob/raise_minimums_to_avoid_aura_rebalance/config/protocol_fees_constants.json"
 )
-CORE_POOLS_URL = "https://github.com/BalancerMaxis/multisig-ops/blob/raise_minimums_to_avoid_aura_rebalance/config/core_pools.json"
+CORE_POOLS_URL = "https://raw.githubusercontent.com/BalancerMaxis/bal_addresses/main/outputs/core_pools.json"
 
 REROUTE_CONFIG_URL = (
     "https://raw.githubusercontent.com/BalancerMaxis/multisig-ops/main/config/core_pools_rerouting.json"
