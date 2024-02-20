@@ -15,13 +15,13 @@ class Chains(Enum):
 
 
 FEE_CONSTANTS_URL = (
-    "https://raw.githubusercontent.com/BalancerMaxis/backout-rerouting/main/config"
+    "https://raw.githubusercontent.com/BalancerMaxis/backout-rerouting/config"
     "/protocol_fees_constants.json"
 )
 
-CORE_POOLS_URL = "https://raw.githubusercontent.com/BalancerMaxis/backout-rerouting/main/config/core_pools.json"
+CORE_POOLS_URL = "https://raw.githubusercontent.com/BalancerMaxis/backout-rerouting/config/core_pools.json"
 
-REROUTE_CONFIG_URL = "https://raw.githubusercontent.com/BalancerMaxis/backout-rerouting/main/config/core_pools_rerouting.json"
+REROUTE_CONFIG_URL = "https://raw.githubusercontent.com/BalancerMaxis/backout-rerouting/config/core_pools_rerouting.json"
 
 # Define constants for Arbitrum:
 BALANCER_GRAPH_URLS = Munch()
