@@ -130,10 +130,29 @@
     "auraIncentivesPctTotal": 0.5175,
     "balIncentivesPct": 0.2413,
     "balIncentivesPctTotal": 0.4825,
-    "feesToDaoPct": 0.1750,
-    "feesToVebalPct": 0.3250,
+    "feesToDaoPct": 0.175,
+    "feesToVebalPct": 0.325,
     "createdAt": 1706873833,
     "periodStart": 1705536000,
     "periodEnd": 1706745600
+  },
+  {
+    "feesCollected": 314348.11,
+    "incentivesDistributed": 314348.04,
+    "feesNotDistributed": 0.07,
+    "auraIncentives": 83268.72,
+    "balIncentives": 73905.30,
+    "feesToDao": 55010.90,
+    "feesToVebal": 102163.12,
+    "auravebalShare": 0.51,
+    "auraIncentivesPct": 0.2649,
+    "auraIncentivesPctTotal": 0.5298,
+    "balIncentivesPct": 0.2351,
+    "balIncentivesPctTotal": 0.4702,
+    "feesToDaoPct": 0.1750,
+    "feesToVebalPct": 0.3250,
+    "createdAt": 1708017523,
+    "periodStart": 1706745600,
+    "periodEnd": 1707955200
   }
 ]
