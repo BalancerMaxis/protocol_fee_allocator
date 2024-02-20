@@ -6,7 +6,12 @@ from munch import Munch
 class Chains(Enum):
     MAINNET = "mainnet"
     ARBITRUM = "arbitrum"
-
+    POLYGON = "polygon"
+    # OPTIMISM = "optimism"
+    GNOSIS = "gnosis"
+    AVALANCHE = "avalanche"
+    BASE = "base"
+    ZKEVM = "zkevm"
 
 
 FEE_CONSTANTS_URL = (
