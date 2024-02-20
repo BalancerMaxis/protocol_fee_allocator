@@ -15,9 +15,9 @@ class Chains(Enum):
 
 
 FEE_CONSTANTS_URL = (
-    "https://raw.githubusercontent.com/BalancerMaxis/multisig-ops/main/config/protocol_fees_constants.json"
+    "https://raw.githubusercontent.com/BalancerMaxis/multisig-ops/backout-rerouting/config/protocol_fees_constants.json"
 )
-CORE_POOLS_URL = "https://raw.githubusercontent.com/BalancerMaxis/multisig-ops/revert-auto-corepools/config/core_pools.json"
+CORE_POOLS_URL = "https://raw.githubusercontent.com/BalancerMaxis/multisig-ops/backout-rerouting/config/core_pools.json"
 
 REROUTE_CONFIG_URL = (
     "https://raw.githubusercontent.com/BalancerMaxis/multisig-ops/backout-rerouting/config/core_pools_rerouting.json"
