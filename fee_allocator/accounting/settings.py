@@ -20,7 +20,7 @@ FEE_CONSTANTS_URL = (
 CORE_POOLS_URL = "https://raw.githubusercontent.com/BalancerMaxis/multisig-ops/main/config/core_pools.json"
 
 REROUTE_CONFIG_URL = (
-    "https://raw.githubusercontent.com/BalancerMaxis/multisig-ops/main/config/core_pools_rerouting.json"
+    "https://raw.githubusercontent.com/BalancerMaxis/multisig-ops/rerouting/config/core_pools_rerouting.json"
 )
 # Define constants for Arbitrum:
 BALANCER_GRAPH_URLS = Munch()
