@@ -39,23 +39,30 @@ def recon_and_validate(
     # If everything is 0 - don't store the summary
     if all_incentives_sum == 0 or all_fees_sum == 0:
         return
-    aura_incentives = sum([x["aura_incentives"] for x in fees.values()])
-    bal_incentives = sum([x["bal_incentives"] for x in fees.values()])
-    fees_to_dao = sum([x["fees_to_dao"] for x in fees.values()])
-    fees_to_vebal = sum([x["fees_to_vebal"] for x in fees.values()])
-    delta = all_fees_sum - all_incentives_sum
-    # Make delta positive
-    if delta < 0:
-        delta = -delta
+
+    total_aura_incentives = 0
+    total_bal_incentives = 0
+    total_fees_to_dao = 0
+    total_fees_to_vebal = 0
+    for x in fees.values():
+        assert x['aura_incentives'] >= 0
+        assert x['bal_incentives'] >= 0
+        assert x["fees_to_dao"] >= 0
+        assert x['fees_to_vebal'] >= 0
+        total_aura_incentives += x["aura_incentives"]
+        total_bal_incentives += x["bal_incentives"]
+        total_fees_to_dao += x["fees_to_dao"]
+        total_fees_to_vebal += x["fees_to_vebal"]
+    delta = abs(all_fees_sum - all_incentives_sum)
     assert delta < Decimal(0.1), f"Reconciliation failed. Delta: {delta}"
 
     # Make sure all SUM(pct) == 1
     assert (
         round(
-            aura_incentives / all_incentives_sum
-            + bal_incentives / all_incentives_sum
-            + fees_to_dao / all_incentives_sum
-            + fees_to_vebal / all_incentives_sum,
+            total_aura_incentives / all_incentives_sum
+            + total_bal_incentives / all_incentives_sum
+            + total_fees_to_dao / all_incentives_sum
+            + total_fees_to_vebal / all_incentives_sum,
             4,
         )
         == 1
@@ -66,17 +73,17 @@ def recon_and_validate(
         "feesCollected": round(all_fees_sum, 2),
         "incentivesDistributed": round(all_incentives_sum, 2),
         "feesNotDistributed": round(delta, 2),
-        "auraIncentives": round(aura_incentives, 2),
-        "balIncentives": round(bal_incentives, 2),
-        "feesToDao": round(fees_to_dao, 2),
-        "feesToVebal": round(fees_to_vebal, 2),
+        "auraIncentives": round(total_aura_incentives, 2),
+        "balIncentives": round(total_bal_incentives, 2),
+        "feesToDao": round(total_fees_to_dao, 2),
+        "feesToVebal": round(total_fees_to_vebal, 2),
         "auravebalShare": round(aura_vebal_share, 2),
-        "auraIncentivesPct": round(aura_incentives / all_incentives_sum, 4),
-        "auraIncentivesPctTotal": round(aura_incentives / (aura_incentives + bal_incentives), 4),
-        "balIncentivesPct": round(bal_incentives / all_incentives_sum, 4),
-        "balIncentivesPctTotal": round(bal_incentives / (aura_incentives + bal_incentives), 4),
-        "feesToDaoPct": round(fees_to_dao / all_incentives_sum, 4),
-        "feesToVebalPct": round(fees_to_vebal / all_incentives_sum, 4),
+        "auraIncentivesPct": round(total_aura_incentives / all_incentives_sum, 4),
+        "auraIncentivesPctTotal": round(total_aura_incentives / (total_aura_incentives + total_bal_incentives), 4),
+        "balIncentivesPct": round(total_bal_incentives / all_incentives_sum, 4),
+        "balIncentivesPctTotal": round(total_bal_incentives / (total_aura_incentives + total_bal_incentives), 4),
+        "feesToDaoPct": round(total_fees_to_dao / all_incentives_sum, 4),
+        "feesToVebalPct": round(total_fees_to_vebal / all_incentives_sum, 4),
         # UNIX timestamp
         "createdAt": int(datetime.datetime.now().timestamp()),
         "periodStart": timestamp_2_weeks_ago,
