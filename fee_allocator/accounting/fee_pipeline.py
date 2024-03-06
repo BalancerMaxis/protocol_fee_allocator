@@ -43,7 +43,8 @@ def run_fees(
     # Fetch fee constants:
     fee_constants = requests.get(FEE_CONSTANTS_URL).json()
     # Fetch re-route config:
-    reroute_config = requests.get(REROUTE_CONFIG_URL).json()
+    reroute_config = {}
+    #reroute_config = requests.get(REROUTE_CONFIG_URL).json()
     target_blocks = {}
     pool_snapshots = {}
     collected_fees = {}
