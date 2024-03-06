@@ -1,4 +1,5 @@
 import math
+import copy
 from decimal import Decimal
 from typing import Dict
 from typing import List
@@ -196,9 +197,12 @@ def re_route_incentives(
             incentives[reroute[chain.value][pool_id]]['total_incentives'] += _total_incentives
             # Mark source pool incentives as rerouted
             incentives[reroute[chain.value][pool_id]]['reroute_incentives'] += _total_incentives
+            # Move earned fees allocations for rerouting logic
+            incentives[reroute[chain.value][pool_id]] += copy(incentives[pool_id]['earned_fees'])
             # Zero out source pool
             incentives[pool_id]['aura_incentives'] = 0
             incentives[pool_id]['bal_incentives'] = 0
             incentives[pool_id]['total_incentives'] = 0
             incentives[pool_id]['reroute_incentives'] -= _total_incentives
+            incentives[pool_id]['earned_fees'] = 0
     return incentives
