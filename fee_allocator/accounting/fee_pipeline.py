@@ -14,6 +14,7 @@ from fee_allocator.accounting.collectors import collect_fee_info
 from fee_allocator.accounting.distribution import calc_and_split_incentives
 from fee_allocator.accounting.distribution import re_distribute_incentives
 from fee_allocator.accounting.distribution import re_route_incentives
+from fee_allocator.accounting.distribution import add_last_join_exit
 from fee_allocator.accounting.logger import logger
 from fee_allocator.accounting.settings import BALANCER_GRAPH_URLS
 from fee_allocator.accounting.settings import CORE_POOLS_URL
@@ -138,6 +139,8 @@ def run_fees(
             Decimal(fee_constants["min_vote_incentive_amount"]),
             aura_vebal_share=Decimal(aura_vebal_share),
         )
+        ## Add data about last join/exit
+        add_last_join_exit(incentives, chain.value)
     # Wrap into dataframe and sort by earned fees and store to csv
     joint_incentives_data = {
         **incentives[Chains.MAINNET.value],
