@@ -5,7 +5,7 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
-from bal_addresses import Subgraph
+from bal_addresses import BalPoolsGauges
 from fee_allocator.accounting.settings import Chains
 
 
@@ -179,7 +179,7 @@ def add_last_join_exit(incentives: Dict[str, Dict], chain: Chains, alertTimeStam
     adds last_join_exit for each pool in the incentives list for reporting.
     Returns the same thing as inputed with the additional field added for each line
     """
-    q = Subgraph(chain.value)
+    q = BalPoolsGauges(chain.value)
     results = {}
     for pool_id, incentive_data in incentives.items():
         results[pool_id] = incentive_data
