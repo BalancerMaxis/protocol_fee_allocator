@@ -143,7 +143,6 @@ def run_fees(
         )
         ## Add data about last join/exit
         incentives[chain.value] = add_last_join_exit(redistributed_incentives, chain)
-    json.dumps(incentives, indent=1)
     # Wrap into dataframe and sort by earned fees and store to csv
     joint_incentives_data = {
         **incentives[Chains.MAINNET.value],
