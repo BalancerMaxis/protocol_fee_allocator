@@ -198,10 +198,16 @@ def re_route_incentives(
             incentives[reroute[chain.value][pool_id]]['reroute_incentives'] += _total_incentives
             # Move earned fees allocations for rerouting logic
             incentives[reroute[chain.value][pool_id]]['earned_fees'] += incentives[pool_id]['earned_fees']
+            incentives[reroute[chain.value][pool_id]]['fees_to_vebal'] += incentives[pool_id]['fees_to_vebal']
+            incentives[reroute[chain.value][pool_id]]['fees_to_dao'] += incentives[pool_id]['fees_to_dao']
+
             # Zero out source pool
             incentives[pool_id]['aura_incentives'] = 0
             incentives[pool_id]['bal_incentives'] = 0
             incentives[pool_id]['total_incentives'] = 0
             incentives[pool_id]['reroute_incentives'] -= _total_incentives
             incentives[pool_id]['earned_fees'] = 0
+            incentives[pool_id]['fees_to_vebal'] = 0
+            incentives[pool_id]['fees_to_dao'] = 0
+
     return incentives
