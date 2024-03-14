@@ -140,7 +140,7 @@ def run_fees(
             aura_vebal_share=Decimal(aura_vebal_share),
         )
         ## Add data about last join/exit
-        add_last_join_exit(incentives, chain)
+        incentives[chain.value] = add_last_join_exit(incentives, chain)
     # Wrap into dataframe and sort by earned fees and store to csv
     joint_incentives_data = {
         **incentives[Chains.MAINNET.value],
