@@ -1,5 +1,7 @@
 import datetime
 import os
+import json
+
 from decimal import Decimal
 from typing import Dict
 from typing import List
@@ -133,14 +135,14 @@ def run_fees(
             mapped_pools_info,
         )
         re_routed_incentives = re_route_incentives(_incentives, chain, reroute_config)
-        incentives[chain.value] = re_distribute_incentives(
+        redistributed_incentives = re_distribute_incentives(
             re_routed_incentives,
             Decimal(fee_constants["min_aura_incentive"]),
             Decimal(fee_constants["min_vote_incentive_amount"]),
             aura_vebal_share=Decimal(aura_vebal_share),
         )
         ## Add data about last join/exit
-        incentives[chain.value] = add_last_join_exit(incentives, chain)
+        incentives[chain.value] = add_last_join_exit(redistributed_incentives, chain)
     # Wrap into dataframe and sort by earned fees and store to csv
     joint_incentives_data = {
         **incentives[Chains.MAINNET.value],
@@ -151,6 +153,7 @@ def run_fees(
         **incentives[Chains.GNOSIS.value],
         **incentives.get(Chains.ZKEVM.value, {})
     }
+    json.dumps(joint_incentives_data, indent=1)
     joint_incentives_df = pd.DataFrame.from_dict(joint_incentives_data, orient="index")
 
     incentives_df_sorted = joint_incentives_df.sort_values(
