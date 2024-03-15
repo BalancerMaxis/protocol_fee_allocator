@@ -183,6 +183,7 @@ def add_last_join_exit(incentives: Dict[str, Dict], chain: Chains, alertTimeStam
     results = {}
     for pool_id, incentive_data in incentives.items():
         results[pool_id] = incentive_data
+        timestamp = q.get_last_join_exit(pool_id)
         try:
             timestamp = q.get_last_join_exit(pool_id)
         except:
