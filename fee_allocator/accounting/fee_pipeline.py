@@ -11,6 +11,7 @@ import requests
 from munch import Munch
 from web3 import Web3
 
+from bal_addresses import BalPoolsGauges
 from fee_allocator.accounting import PROJECT_ROOT
 from fee_allocator.accounting.collectors import collect_fee_info
 from fee_allocator.accounting.distribution import calc_and_split_incentives
@@ -64,9 +65,17 @@ def run_fees(
     existing_aura_bribs: List[Dict] = fetch_hh_aura_bribs()
     # Collect all BPT prices:
     for chain in Chains:
-        pools = core_pools.get(chain.value, None)
+        poolutil = BalPoolsGauges(chain.value)
+        listed_core_pools = core_pools.get(chain.value, None)
+        pools = []
         if pools is None:
             continue
+        ###  Remove any invalid core pools
+        for pool in listed_core_pools:
+            if pool and poolutil.has_alive_preferential_gauge(pool):
+                pools.append(pool)
+            else:
+                print(f"Warning pool {pool} on chain {chain} is in the core pools list but does not have a gauge.  Skipping.")
         if chain.value == Chains.ZKEVM.value:
             print("SKIPPING ZKEVM DUE TO RPC ISSUES, CHANGE ME WHEN FIXED!")
             continue
