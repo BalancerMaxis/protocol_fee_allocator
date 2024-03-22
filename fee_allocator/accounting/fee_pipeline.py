@@ -65,7 +65,7 @@ def run_fees(
     existing_aura_bribs: List[Dict] = fetch_hh_aura_bribs()
     # Collect all BPT prices:
     for chain in Chains:
-        poolutil = BalPoolsGauges(chain)
+        poolutil = BalPoolsGauges(chain.value)
         pools = core_pools.get(chain.value, None)
         if pools is None:
             continue
