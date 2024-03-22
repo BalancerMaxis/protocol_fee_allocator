@@ -11,6 +11,7 @@ import requests
 from munch import Munch
 from web3 import Web3
 
+from bal_addresses import BalPoolsGauges
 from fee_allocator.accounting import PROJECT_ROOT
 from fee_allocator.accounting.collectors import collect_fee_info
 from fee_allocator.accounting.distribution import calc_and_split_incentives
@@ -64,6 +65,7 @@ def run_fees(
     existing_aura_bribs: List[Dict] = fetch_hh_aura_bribs()
     # Collect all BPT prices:
     for chain in Chains:
+        poolutil = BalPoolsGauges(chain)
         pools = core_pools.get(chain.value, None)
         if pools is None:
             continue
@@ -81,6 +83,9 @@ def run_fees(
 
         logger.info(f"Collecting bpt prices for {chain.value}")
         for core_pool in pools.keys():
+            if not poolutil.has_alive_preferential_gauge(core_pool):
+                print(f"WARNING: {chain}:{core_pool} shows up in the core pool list but does not have a preferential gauge.  Ignoring.")
+                continue
             _bpt_price = get_twap_bpt_price(
                 core_pool,
                 chain.value,
