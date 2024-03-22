@@ -83,9 +83,6 @@ def run_fees(
 
         logger.info(f"Collecting bpt prices for {chain.value}")
         for core_pool in pools.keys():
-            if not poolutil.has_alive_preferential_gauge(core_pool):
-                print(f"WARNING: {chain}:{core_pool} shows up in the core pool list but does not have a preferential gauge.  Ignoring.")
-                continue
             _bpt_price = get_twap_bpt_price(
                 core_pool,
                 chain.value,
