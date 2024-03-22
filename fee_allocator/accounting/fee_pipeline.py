@@ -67,15 +67,15 @@ def run_fees(
     for chain in Chains:
         poolutil = BalPoolsGauges(chain.value)
         listed_core_pools = core_pools.get(chain.value, None)
-        pools = []
-        if pools is None:
+        pools = {}
+        if listed_core_pools is None:
             continue
         ###  Remove any invalid core pools
-        for pool in listed_core_pools:
-            if pool and poolutil.has_alive_preferential_gauge(pool):
-                pools.append(pool)
+        for pool_id, description in listed_core_pools.items():
+            if poolutil.has_alive_preferential_gauge(pool_id):
+                pools[pool_id] = description
             else:
-                print(f"Warning pool {pool} on chain {chain} is in the core pools list but does not have a gauge.  Skipping.")
+                print(f"Warning pool {pool_id}({description}) on chain {chain} is in the core pools list but does not have a gauge.  Skipping.")
         if chain.value == Chains.ZKEVM.value:
             print("SKIPPING ZKEVM DUE TO RPC ISSUES, CHANGE ME WHEN FIXED!")
             continue
