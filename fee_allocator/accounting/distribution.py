@@ -190,7 +190,7 @@ def add_last_join_exit(incentives: Dict[str, Dict], chain: Chains, alertTimeStam
             results[pool_id]["last_join_exit"] = "Error fetching"
             continue
         gmt_time = datetime.datetime.utcfromtimestamp(timestamp)
-        human_time = gmt_time.strftime('%Y-%m-%d %H:%M:%S %z')
+        human_time = gmt_time.strftime('%Y-%m-%d %H:%M:%S')+"+00:00"
         if alertTimeStamp and timestamp < alertTimeStamp:
             human_time = f"!!!{human_time}"
         results[pool_id]["last_join_exit"] = human_time
