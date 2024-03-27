@@ -1,8 +1,11 @@
 import math
+import datetime
 from decimal import Decimal
 from typing import Dict
 from typing import List
+from typing import Optional
 
+from bal_addresses import BalPoolsGauges
 from fee_allocator.accounting.settings import Chains
 
 
@@ -170,6 +173,27 @@ def re_distribute_incentives(
             # Decrease bal incentives
             incentives[pool_id]['bal_incentives'] -= aura_incentives_to_increase
     return incentives
+
+def add_last_join_exit(incentives: Dict[str, Dict], chain: Chains, alertTimeStamp: Optional[int] = None) -> Dict[str, Dict]:
+    """
+    adds last_join_exit for each pool in the incentives list for reporting.
+    Returns the same thing as inputed with the additional field added for each line
+    """
+    q = BalPoolsGauges(chain.value)
+    results = {}
+    for pool_id, incentive_data in incentives.items():
+        results[pool_id] = incentive_data
+        try:
+            timestamp = q.get_last_join_exit(pool_id)
+        except:
+            results[pool_id]["last_join_exit"] = "Error fetching"
+            continue
+        gmt_time = datetime.datetime.utcfromtimestamp(timestamp)
+        human_time = gmt_time.strftime('%Y-%m-%d %H:%M:%S')+"+00:00"
+        if alertTimeStamp and timestamp < alertTimeStamp:
+            human_time = f"!!!{human_time}"
+        results[pool_id]["last_join_exit"] = human_time
+    return results
 
 
 def re_route_incentives(

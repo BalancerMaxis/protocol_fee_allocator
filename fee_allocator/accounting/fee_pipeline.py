@@ -1,5 +1,7 @@
 import datetime
 import os
+import json
+
 from decimal import Decimal
 from typing import Dict
 from typing import List
@@ -9,11 +11,13 @@ import requests
 from munch import Munch
 from web3 import Web3
 
+from bal_addresses import BalPoolsGauges
 from fee_allocator.accounting import PROJECT_ROOT
 from fee_allocator.accounting.collectors import collect_fee_info
 from fee_allocator.accounting.distribution import calc_and_split_incentives
 from fee_allocator.accounting.distribution import re_distribute_incentives
 from fee_allocator.accounting.distribution import re_route_incentives
+from fee_allocator.accounting.distribution import add_last_join_exit
 from fee_allocator.accounting.logger import logger
 from fee_allocator.accounting.settings import BALANCER_GRAPH_URLS
 from fee_allocator.accounting.settings import CORE_POOLS_URL
@@ -61,9 +65,17 @@ def run_fees(
     existing_aura_bribs: List[Dict] = fetch_hh_aura_bribs()
     # Collect all BPT prices:
     for chain in Chains:
-        pools = core_pools.get(chain.value, None)
-        if pools is None:
+        poolutil = BalPoolsGauges(chain.value)
+        listed_core_pools = core_pools.get(chain.value, None)
+        pools = {}
+        if listed_core_pools is None:
             continue
+        ###  Remove any invalid core pools
+        for pool_id, description in listed_core_pools.items():
+            if poolutil.has_alive_preferential_gauge(pool_id):
+                pools[pool_id] = description
+            else:
+                print(f"Warning pool {pool_id}({description}) on chain {chain} is in the core pools list but does not have a gauge.  Skipping.")
         if chain.value == Chains.ZKEVM.value:
             print("SKIPPING ZKEVM DUE TO RPC ISSUES, CHANGE ME WHEN FIXED!")
             continue
@@ -132,12 +144,14 @@ def run_fees(
             mapped_pools_info,
         )
         re_routed_incentives = re_route_incentives(_incentives, chain, reroute_config)
-        incentives[chain.value] = re_distribute_incentives(
+        redistributed_incentives = re_distribute_incentives(
             re_routed_incentives,
             Decimal(fee_constants["min_aura_incentive"]),
             Decimal(fee_constants["min_vote_incentive_amount"]),
             aura_vebal_share=Decimal(aura_vebal_share),
         )
+        ## Add data about last join/exit
+        incentives[chain.value] = add_last_join_exit(redistributed_incentives, chain)
     # Wrap into dataframe and sort by earned fees and store to csv
     joint_incentives_data = {
         **incentives[Chains.MAINNET.value],
