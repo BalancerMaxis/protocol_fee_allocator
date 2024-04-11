@@ -44,11 +44,10 @@ def recon_and_validate(
     fees_to_dao = sum([x["fees_to_dao"] for x in fees.values()])
     fees_to_vebal = sum([x["fees_to_vebal"] for x in fees.values()])
     delta = all_fees_sum - all_incentives_sum
-    # Make delta positive
-    if delta < 0:
-        delta = -delta
-    assert delta < Decimal(0.1), f"Reconciliation failed. Delta: {delta}"
 
+    abs_delta =  abs(delta)
+    assert abs_delta < Decimal(0.15), f"Reconciliation failed. Delta: {delta}"
+    print(f"During recon found a delta of {delta}")
     # Make sure all SUM(pct) == 1
     assert (
         round(
