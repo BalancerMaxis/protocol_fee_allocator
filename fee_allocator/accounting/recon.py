@@ -22,8 +22,8 @@ def recon_and_validate(
     and raise exceptions if validation fails
     """
     # Move to separate function
-    all_fees_sum = Decimal(round(sum(fees_to_distribute.values()), 2))
-    all_incentives_sum = sum(
+    all_fees_sum = Decimal(round(sum(fees_to_distribute.values()), 4))
+    all_incentives_sum = round(sum(
         [
             sum(
                 [
@@ -35,7 +35,7 @@ def recon_and_validate(
             )
             for x in fees.values()
         ]
-    )
+    ), 4)
     # If everything is 0 - don't store the summary
     if all_incentives_sum == 0 or all_fees_sum == 0:
         return
@@ -45,7 +45,7 @@ def recon_and_validate(
     fees_to_vebal = sum([x["fees_to_vebal"] for x in fees.values()])
     delta = all_fees_sum - all_incentives_sum
 
-    abs_delta =  abs(delta)
+    abs_delta = abs(delta)
     assert abs_delta < Decimal(0.15), f"Reconciliation failed. Delta: {delta}"
     print(f"During recon found a delta of {delta}")
     # Make sure all SUM(pct) == 1
@@ -133,7 +133,7 @@ def generate_and_save_input_csv(fees: dict, period_ends: int, mapped_pools_info:
             {
                 "target": mapped_pools_info[pool_id],
                 "platform": "aura",
-                "amount": round(fee_item["aura_incentives"], 2),
+                "amount": round(fee_item["aura_incentives"], 4),
             }
         )
         # Bal incentives
@@ -141,7 +141,7 @@ def generate_and_save_input_csv(fees: dict, period_ends: int, mapped_pools_info:
             {
                 "target": mapped_pools_info[pool_id],
                 "platform": "balancer",
-                "amount": round(fee_item["bal_incentives"], 2),
+                "amount": round(fee_item["bal_incentives"], 4),
             }
         )
     # Add DAO share to the output
@@ -150,7 +150,7 @@ def generate_and_save_input_csv(fees: dict, period_ends: int, mapped_pools_info:
         {
             "target": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",  # DAO msig
             "platform": "payment",
-            "amount": round(dao_share, 2),
+            "amount": round(dao_share, 4),
         }
     )
     # Convert to dataframe and save to csv
