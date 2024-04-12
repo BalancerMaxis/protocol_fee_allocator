@@ -164,7 +164,7 @@ def generate_payload(web3: Web3, csv_file: str):
         prop = Web3.solidity_keccak(["address"], [Web3.to_checksum_address(gauge)])
         mantissa = int(mantissa)
         prophash = prop.hex()
-        prophash = "0x" + prophash if prophash[:2] != "0x"
+        prophash = "0x" + prophash if prophash[:2] != "0x" else prophash
         print("******* Posting Balancer Bribe:")
         print("*** Gauge Address:", gauge)
         print("*** Proposal hash:", prophash)
