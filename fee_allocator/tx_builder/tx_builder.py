@@ -163,17 +163,17 @@ def generate_payload(web3: Web3, csv_file: str):
     def bribe_balancer(gauge, mantissa):
         prop = Web3.solidity_keccak(["address"], [Web3.to_checksum_address(gauge)])
         mantissa = int(mantissa)
-
+        prophash = "0x"+prop.hex()
         print("******* Posting Balancer Bribe:")
         print("*** Gauge Address:", gauge)
-        print("*** Proposal hash:", prop.hex())
+        print("*** Proposal hash:", prophash)
         print("*** Amount:", amount)
         print("*** Mantissa Amount:", mantissa)
 
         if amount == 0:
             return
         bal_tx = copy.deepcopy(BALANCER_BRIB)
-        bal_tx["contractInputsValues"]["_proposal"] = prop.hex()
+        bal_tx["contractInputsValues"]["_proposal"] = prophash
         bal_tx["contractInputsValues"]["_token"] = address_book.extras.tokens.USDC
         bal_tx["contractInputsValues"]["_amount"] = str(mantissa)
 
