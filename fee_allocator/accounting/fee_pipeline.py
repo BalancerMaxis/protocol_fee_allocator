@@ -46,10 +46,6 @@ def run_fees(
     core_pools = requests.get(CORE_POOLS_URL).json()
     # Fetch fee constants:
     fee_constants = requests.get(FEE_CONSTANTS_URL).json()
-    ## TODO remove - part of a test
-    fee_constants["min_aura_incentive"] = 1500
-    fee_constants["min_vote_incentive_amount"] = 500
-    fee_constants["min_aura_incentive"] = 1500
     # Fetch re-route config:
     reroute_config = requests.get(REROUTE_CONFIG_URL).json()
     target_blocks = {}
