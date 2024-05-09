@@ -44,7 +44,7 @@ def get_last_thursday_odd_week():
     return last_thursday_odd_utc
 
 now = datetime.utcnow()
-DELTA = 1000
+DELTA = 6000
 # TS_NOW = 1704326400
 # TS_2_WEEKS_AGO = 1703116800
 TS_NOW = int(now.timestamp()) - DELTA
