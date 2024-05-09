@@ -15,6 +15,8 @@ from fee_allocator.accounting.recon import recon_and_validate
 from fee_allocator.accounting.settings import Chains
 from fee_allocator.helpers import fetch_all_pools_info
 from fee_allocator.tx_builder.tx_builder import generate_payload
+from fee_allocator.helpers import get_block_by_ts
+from fee_allocator.helpers import calculate_aura_vebal_share
 
 def get_last_thursday_odd_week():
     # Use the current UTC date and time
@@ -126,7 +128,9 @@ def main() -> None:
         web3_instances, ts_now, ts_in_the_past, output_file_name, fees_to_distribute,
         mapped_pools_info,
     )
-    recon_and_validate(collected_fees, fees_to_distribute, ts_now, ts_in_the_past)
+    _target_mainnet_block = get_block_by_ts(ts_now, Chains.MAINNET.value)
+    target_aura_vebal_share = calculate_aura_vebal_share(web3_instances.mainnet, _target_mainnet_block)
+    recon_and_validate(collected_fees, fees_to_distribute, ts_now, ts_in_the_past, target_aura_vebal_share)
     csvfile = generate_and_save_input_csv(collected_fees, ts_now, mapped_pools_info)
     if output_file_name != "current_fees.csv":
         generate_payload(web3_instances["mainnet"], csvfile)

@@ -11,7 +11,7 @@ from fee_allocator.accounting import PROJECT_ROOT
 
 
 def recon_and_validate(fees: dict, fees_to_distribute: dict, timestamp_now: int, timestamp_2_weeks_ago: int,
-        aura_vebal_share: Optional[Decimal] = Decimal(0.506), ) -> None:
+                       target_aura_vebal_share: Decimal) -> None:
     """
     Recon fees collected from the fee pipeline. Store the summary to json file
     and raise exceptions if validation fails
@@ -20,7 +20,7 @@ def recon_and_validate(fees: dict, fees_to_distribute: dict, timestamp_now: int,
     all_fees_sum = Decimal(round(sum(fees_to_distribute.values()), 4))
     all_incentives_sum = round(
         sum([sum([x["fees_to_vebal"], x["fees_to_dao"], x["aura_incentives"], x["bal_incentives"], ]) for x in
-            fees.values()]), 4)
+             fees.values()]), 4)
     # If everything is 0 - don't store the summary
     if all_incentives_sum == 0 or all_fees_sum == 0:
         return
@@ -54,20 +54,25 @@ def recon_and_validate(fees: dict, fees_to_distribute: dict, timestamp_now: int,
     assert (round(
         aura_incentives / all_incentives_sum + bal_incentives / all_incentives_sum + fees_to_dao / all_incentives_sum + fees_to_vebal / all_incentives_sum,
         4, ) == 1), "Reconciliation failed. Sum of percentages is not equal to 1"
+    # calvulate aura veBAL share
+    aura_vebal_share = round(aura_incentives / (aura_incentives + bal_incentives), 4)
+    if target_aura_vebal_share:
+        # check that aura_vebal_share is within 5% of target
+        assert abs(aura_vebal_share - target_aura_vebal_share) < 0.05, f"Reconciliation failed. Aura veBAL share is not within 5% of target. Aura veBAL share: {aura_vebal_share}, Target: {target_aura_vebal_share}"
 
     # Store the summary to json file
     summary = {"feesCollected": round(all_fees_sum, 2), "incentivesDistributed": round(all_incentives_sum, 2),
-        "feesNotDistributed": round(delta, 2), "auraIncentives": round(aura_incentives, 2),
-        "balIncentives": round(bal_incentives, 2), "feesToDao": round(fees_to_dao, 2),
-        "feesToVebal": round(fees_to_vebal, 2), "auravebalShare": round(aura_vebal_share, 2),
-        "auraIncentivesPct": round(aura_incentives / all_incentives_sum, 4),
-        "auraIncentivesPctTotal": round(aura_incentives / (aura_incentives + bal_incentives), 4),
-        "balIncentivesPct": round(bal_incentives / all_incentives_sum, 4),
-        "balIncentivesPctTotal": round(bal_incentives / (aura_incentives + bal_incentives), 4),
-        "feesToDaoPct": round(fees_to_dao / all_incentives_sum, 4),
-        "feesToVebalPct": round(fees_to_vebal / all_incentives_sum, 4), # UNIX timestamp
-        "createdAt": int(datetime.datetime.now().timestamp()), "periodStart": timestamp_2_weeks_ago,
-        "periodEnd": timestamp_now, }
+               "feesNotDistributed": round(delta, 2), "auraIncentives": round(aura_incentives, 2),
+               "balIncentives": round(bal_incentives, 2), "feesToDao": round(fees_to_dao, 2),
+               "feesToVebal": round(fees_to_vebal, 2), "auravebalShare": round(aura_vebal_share, 2),
+               "auraIncentivesPct": round(aura_incentives / all_incentives_sum, 4),
+               "auraIncentivesPctTotal": round(aura_incentives / (aura_incentives + bal_incentives), 4),
+               "balIncentivesPct": round(bal_incentives / all_incentives_sum, 4),
+               "balIncentivesPctTotal": round(bal_incentives / (aura_incentives + bal_incentives), 4),
+               "feesToDaoPct": round(fees_to_dao / all_incentives_sum, 4),
+               "feesToVebalPct": round(fees_to_vebal / all_incentives_sum, 4),  # UNIX timestamp
+               "createdAt": int(datetime.datetime.now().timestamp()), "periodStart": timestamp_2_weeks_ago,
+               "periodEnd": timestamp_now, }
     recon_file_name = os.path.join(PROJECT_ROOT, "fee_allocator/summaries/recon.json")
     # Append new summary to the file
     with open(recon_file_name) as f:
@@ -95,7 +100,7 @@ def generate_and_save_input_csv(fees: dict, period_ends: int, mapped_pools_info:
     """
     all_incentives_sum = sum(
         [sum([x["fees_to_vebal"], x["fees_to_dao"], x["aura_incentives"], x["bal_incentives"], ]) for x in
-            fees.values()])
+         fees.values()])
     # Don't generate csv if there are no incentives
     if all_incentives_sum == 0:
         return
@@ -104,14 +109,14 @@ def generate_and_save_input_csv(fees: dict, period_ends: int, mapped_pools_info:
     for pool_id, fee_item in fees.items():
         # Aura incentives
         output.append({"target": mapped_pools_info[pool_id], "platform": "aura",
-            "amount": round(fee_item["aura_incentives"], 4), })
+                       "amount": round(fee_item["aura_incentives"], 4), })
         # Bal incentives
         output.append({"target": mapped_pools_info[pool_id], "platform": "balancer",
-            "amount": round(fee_item["bal_incentives"], 4), })
+                       "amount": round(fee_item["bal_incentives"], 4), })
     # Add DAO share to the output
     dao_share = sum([x["fees_to_dao"] for x in fees.values()])
     output.append({"target": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",  # DAO msig
-        "platform": "payment", "amount": round(dao_share, 4), })
+                   "platform": "payment", "amount": round(dao_share, 4), })
     # Convert to dataframe and save to csv
     df = pd.DataFrame(output)
 
