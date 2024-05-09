@@ -9,6 +9,8 @@ from bal_addresses import BalPoolsGauges
 from fee_allocator.accounting.settings import Chains
 
 
+# TODO remove existing existing_aura_bribs from function.  Perhaps find another way to count aura votes already placed
+#   when considering routing bribs away from Aura
 def calc_and_split_incentives(
         fees: Dict, chain: str, fees_to_distribute: Decimal,
         min_aura_incentive: Decimal, dao_share: Decimal, vebal_share: Decimal,
@@ -34,19 +36,13 @@ def calc_and_split_incentives(
         pool_share = pool_fees / Decimal(total_fees)
         # If aura incentives is less than 500 USDC, we pay all incentives to balancer
         total_incentive = pool_share * fees_to_distr_wo_dao_vebal
-        aura_incentives = round(total_incentive * aura_vebal_share, 2)
-        # If pool has already existing X aura incentives, then it gets precise split of incentives between aura and bal
-        # as aura_bal_ratio
-        cumulative_aura_incentives = Decimal(0)
-        for aura_brib in existing_aura_bribs:
-            if aura_brib['proposal'] == mapped_pools_info.get(pool, "N/A").lower():
-                # Calculate cumulative aura incentives for this pool
-                cumulative_aura_incentives = Decimal(sum([x['value'] for x in aura_brib['bribes']]))
+        aura_incentives = round(total_incentive * aura_vebal_share, 4)
+
+
         # Distribute precisely now, redistribution will happen later.
-        print(f'Pool {pool} has {cumulative_aura_incentives} aura incentives! Allocating precisely...')
-        bal_incentives = round(total_incentive - aura_incentives, 2)
-        fees_to_dao = round(pool_share * fees_to_distribute * dao_share, 2)
-        fees_to_vebal = round(pool_share * fees_to_distribute * vebal_share, 2)
+        bal_incentives = round(total_incentive - aura_incentives, 4)
+        fees_to_dao = round(pool_share * fees_to_distribute * dao_share, 4)
+        fees_to_vebal = round(pool_share * fees_to_distribute * vebal_share, 4)
         # Split fees between aura and bal fees
         pool_incentives[pool] = {
             "chain": chain,
@@ -105,9 +101,9 @@ def re_distribute_incentives(
             # Calculate pool weight:
             pool_weight = _pool_weights[pool_id_to_receive]
             # Calculate incentives to receive
-            to_receive = round(incentives_to_redistribute * pool_weight, 2)
-            to_receive_aura = round(incentives_to_redistribute_aura * pool_weight, 2)
-            to_receive_bal = round(incentives_to_redistribute_bal * pool_weight, 2)
+            to_receive = round(incentives_to_redistribute * pool_weight, 4)
+            to_receive_aura = round(incentives_to_redistribute_aura * pool_weight, 4)
+            to_receive_bal = round(incentives_to_redistribute_bal * pool_weight, 4)
             incentives[pool_id_to_receive]['aura_incentives'] += to_receive_aura
             incentives[pool_id_to_receive]['bal_incentives'] += to_receive_bal
             incentives[pool_id_to_receive]['total_incentives'] += to_receive
@@ -128,7 +124,7 @@ def re_distribute_incentives(
         # Create an array of the top 6 pools that received the most total_incentives
         top_6_pools = sorted(incentives.items(), key=lambda x: x[1]['total_incentives'], reverse=True)[:6]
         # Distribute  1/6th of incentives_taken_from_aura_market to each of the top 6 pools, while subtracting the same amount from bal_incentives
-        amount_per_pool =  round(debt_to_aura_market / 6, 2)
+        amount_per_pool =  round(debt_to_aura_market / 6, 4)
         for pool_id, _data in top_6_pools:
             if _data['total_incentives'] > 0:
                 incentives[pool_id]['aura_incentives'] += debt_to_aura_market
