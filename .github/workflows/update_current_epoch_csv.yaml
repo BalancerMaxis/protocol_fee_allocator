@@ -34,7 +34,7 @@ jobs:
         pip3 install -r requirements.txt
         python3 main.py
 
-    - name: Create PR
+    - name: Create PR (to depricate after moving defilytica)
       id: cpr
       uses: peter-evans/create-pull-request@v5
       with:
@@ -43,3 +43,12 @@ jobs:
         branch: gha-fees-report
         delete-branch: true
         labels: "Fees-Report"
+
+    - name: Update current fees branch
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git checkout -b gha-current-fees
+        git add .
+        git commit -m "Automatic update of current epoch data"
+        git push -f origin gha-current-fees
