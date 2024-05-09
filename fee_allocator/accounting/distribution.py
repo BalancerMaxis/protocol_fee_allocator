@@ -88,7 +88,7 @@ def re_distribute_incentives(
     # Collect pools that received > min_vote_incentive_amount
     pools_to_receive = {}
     for pool_id, _data in incentives.items():
-        if _data['total_incentives'] > Decimal(min_incentive_amount):
+        if _data['total_incentives'] >= Decimal(min_incentive_amount):
             pools_to_receive[pool_id] = _data
     # Redistribute incentives
     for pool_id, _data in pools_to_redistribute.items():
@@ -108,6 +108,7 @@ def re_distribute_incentives(
                 [x['earned_fees'] for x in pools_to_receive.values()])
             for pool_id_to_receive, _data_to_receive in pools_to_receive.items()
         }
+        incentives_taken_from_aura_market = 0
         for pool_id_to_receive, _data_to_receive in pools_to_receive.items():
             # Calculate pool weight:
             pool_weight = _pool_weights[pool_id_to_receive]
@@ -115,63 +116,24 @@ def re_distribute_incentives(
             to_receive = round(incentives_to_redistribute * pool_weight, 2)
             to_receive_aura = round(incentives_to_redistribute_aura * pool_weight, 2)
             to_receive_bal = round(incentives_to_redistribute_bal * pool_weight, 2)
-            # Need to check if aura or bal incentives
-            # are less than min aura incentive and distribute accordingly
+            # If less than min_aura incentive, distribute to BAL.
             if _data_to_receive['aura_incentives'] + to_receive_aura < min_aura_incentive:
                 incentives[pool_id_to_receive]['bal_incentives'] += to_receive
-            elif _data_to_receive['bal_incentives'] + to_receive_bal < min_aura_incentive:
-                incentives[pool_id_to_receive]['aura_incentives'] += to_receive
+                incentives_taken_from_aura_market += to_receive_aura
             else:
-                # In case both are > min aura incentive, we distribute evenly
+                # we distribute evenly
                 incentives[pool_id_to_receive]['aura_incentives'] += to_receive_aura
                 incentives[pool_id_to_receive]['bal_incentives'] += to_receive_bal
             incentives[pool_id_to_receive]['total_incentives'] += to_receive
             incentives[pool_id_to_receive]['redirected_incentives'] += to_receive
-
-    # Now, go through each pool once again and redistribute aura and bal incentives considering aura_vebal_share
-    for pool_id, _data in incentives.items():
-        _aura_incentives = _data['aura_incentives']
-        _bal_incentives = _data['bal_incentives']
-        _total_incentives = _data['total_incentives']
-        # Ignore pools with 0 incentives
-        if _total_incentives == 0:
-            continue
-        # Calculate aura and bal incentives percentage
-        aura_incentives_pct = _aura_incentives / _total_incentives
-        # If aura incentives pct is approx equal to aura_vebal_share, we don't need to do anything
-        if math.isclose(aura_incentives_pct, aura_vebal_share, rel_tol=1e-03, abs_tol=1e-03):
-            print(f"Pool {pool_id} aura incentives pct is approx equal to aura_vebal_share, skipping...")
-            continue
-        # If aura incentives percentage is less than aura_vebal_share, we need to increase bal incentives
-        if aura_incentives_pct >= aura_vebal_share:
-            # Calculate how much we need to increase bal incentives
-            bal_incentives_to_increase = round(
-                _total_incentives * (aura_incentives_pct - aura_vebal_share), 2)
-            # Calculate how much we need to decrease aura incentives but not to go below min aura incentive
-            if _aura_incentives - bal_incentives_to_increase <= min_aura_incentive:
-                # If aura incentives are less than min aura incentive after decreasing, we need to calculate
-                # how much we need to decrease aura incentives to min aura incentive
-                aura_incentives_to_decrease = _aura_incentives - min_aura_incentive
-                # Decrease aura incentives to min aura incentive
-                incentives[pool_id]['aura_incentives'] -= aura_incentives_to_decrease
-                incentives[pool_id]['bal_incentives'] += aura_incentives_to_decrease
-            else:
-                # Increase bal incentives
-                incentives[pool_id]['bal_incentives'] += bal_incentives_to_increase
-                # Decrease aura incentives
-                incentives[pool_id]['aura_incentives'] -= bal_incentives_to_increase
-        # If aura incentives percentage is more than aura_vebal_share, we need to increase aura incentives
-        else:
-            # Calculate how much we need to increase aura incentives
-            aura_incentives_to_increase = round(
-                _total_incentives * (aura_vebal_share - aura_incentives_pct), 2)
-            # Only increase aura incentives if it's more than min aura incentive
-            if _aura_incentives + aura_incentives_to_increase < min_aura_incentive:
-                continue
-            # Increase aura incentives
-            incentives[pool_id]['aura_incentives'] += aura_incentives_to_increase
-            # Decrease bal incentives
-            incentives[pool_id]['bal_incentives'] -= aura_incentives_to_increase
+    if incentives_taken_from_aura_market:
+        # Create an array of the top 6 pools that received the most total_incentives
+        top_6_pools = sorted(incentives.items(), key=lambda x: x[1]['total_incentives'], reverse=True)[:6]
+        # Distribute  1/6th of incentives_taken_from_aura_market to each of the top 6 pools, while subtracting the same amount from bal_incentives
+        for pool_id, _data in top_6_pools:
+            if _data['total_incentives'] > 0:
+                incentives[pool_id]['aura_incentives'] += round(incentives_taken_from_aura_market / 6, 2)
+                incentives[pool_id]['bal_incentives'] -= round(incentives_taken_from_aura_market / 6, 2)
     return incentives
 
 def add_last_join_exit(incentives: Dict[str, Dict], chain: Chains, alertTimeStamp: Optional[int] = None) -> Dict[str, Dict]:
