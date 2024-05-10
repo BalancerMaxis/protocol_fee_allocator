@@ -131,7 +131,7 @@ def re_distribute_incentives(
         ## Figure out how much to shift per pool using an even split
         if num_pools_over_min == 0:
             print(
-                f"WARNING: {pool_id} has no pools over min_aura_incentive, but owes {debt_to_aura_market} to the aura market.  Debt will not be repaid.")
+                f"WARNING: {incentives['chain']}:{pool_id} has no pools over min_aura_incentive, but owes {debt_to_aura_market} to the aura market.  Debt will not be repaid.")
             amount_per_pool = 0
         else:
             amount_per_pool = round(debt_to_aura_market / num_pools_over_min, 4)
@@ -139,14 +139,14 @@ def re_distribute_incentives(
         for pool_id in pools_over_aura_min:
             ## TODO: Consider this logic as an additional test/more sensitive handlingthat could allow pool selection based
             #   on total_incentives instead of aura incentives
-            #   if (_data['aura_incentives'] + amount_per_pool) < min_aura_incentive:
+            #   if (incentives['aura_incentives'] + amount_per_pool) < min_aura_incentive:
             #         num_pools_over_min -= 1
             # Distribute the aura_debt to the pools that are over the min_aura_incentive
             if incentives[pool_id]['total_incentives'] > 0:
                 # TODO:  Need to think about edge cases here and watch them.
-                incentives[pool_id]['aura_incentives'] += min(amount_per_pool, _data['bal_incentives'])
-                incentives[pool_id]['bal_incentives'] -= min(amount_per_pool, _data['bal_incentives'])
-                debt_repaid += min(amount_per_pool, _data['bal_incentives'])
+                incentives[pool_id]['aura_incentives'] += min(amount_per_pool, incentives[pool_id]['bal_incentives'])
+                incentives[pool_id]['bal_incentives'] -= min(amount_per_pool, incentives['bal_incentives'])
+                debt_repaid += min(amount_per_pool, incentives['bal_incentives'])
         print(
             f"Debt to aura market: {debt_to_aura_market}, Debt repaid: {debt_repaid}, debt remaining: {debt_to_aura_market - debt_repaid}")
     return incentives
