@@ -119,15 +119,23 @@ def re_distribute_incentives(
             incentives[pool_id]['aura_incentives'] = 0
             incentives[pool_id]['bal_incentives'] += incentives_to_redistribute
             debt_to_aura_market += incentives_to_redistribute
-
+    # We have now allocated all the funds to the pools that deserve it.
+    # We have also potentially moved some value to the Balancer market on pools under the min_aura_incentive
+    # As a result we have generated some debt that we owe the aura market in order to maintain the AURA/BAL split
+    # So now we find pools that have room to reallocate and adjust their split to restore the balance
     if debt_to_aura_market:
         ## Find how many pools ever could be over min_aura_incentive
-        pools_over_aura_min = [pool_id for pool_id, _data in incentives.items() if _data['total_incentives'] >= min_aura_incentive]
+        pools_over_aura_min = [pool_id for pool_id, _data in incentives.items() if _data['aura_incentives'] >= min_aura_incentive]
         num_pools_over_min = len(pools_over_aura_min)
+        ## Figure out how much to shift per pool using an even split
         amount_per_pool =  round(debt_to_aura_market / num_pools_over_min, 4)
-        # Create an array of the top 6 pools that received the most total_incentives
-        # Distribute  1/6th of incentives_taken_from_aura_market to each of the top 6 pools, while subtracting the same amount from bal_incentives
+        ## Check if all ov our
         for pool_id, _data in pools_over_aura_min:
+        ## TODO: Consider this logic as an additional test/more sensitive handlingthat could allow pool selection based
+        #   on total_incentives instead of aura incentives
+         #   if (_data['aura_incentives'] + amount_per_pool) < min_aura_incentive:
+         #         num_pools_over_min -= 1
+            # Distribute the aura_debt to the pools that are over the min_aura_incentive
             if _data['total_incentives'] > 0:
                 # TODO:  Need to think about edge cases here and watch them.
                 incentives[pool_id]['aura_incentives'] += min(amount_per_pool, _data['bal_incentives'])
