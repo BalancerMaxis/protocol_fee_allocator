@@ -131,7 +131,7 @@ def re_distribute_incentives(
         ## Figure out how much to shift per pool using an even split
         if num_pools_over_min == 0:
             print(
-                f"WARNING: {incentives['chain']}:{pool_id} has no pools over min_aura_incentive, but owes {debt_to_aura_market} to the aura market.  Debt will not be repaid.")
+                f"WARNING: {incentives[pool_id]['chain']}:{pool_id} has no pools over min_aura_incentive, but owes {debt_to_aura_market} to the aura market.  Debt will not be repaid.")
             amount_per_pool = 0
         else:
             amount_per_pool = round(debt_to_aura_market / num_pools_over_min, 4)
@@ -147,8 +147,9 @@ def re_distribute_incentives(
                 incentives[pool_id]['aura_incentives'] += min(amount_per_pool, incentives[pool_id]['bal_incentives'])
                 incentives[pool_id]['bal_incentives'] -= min(amount_per_pool, incentives[pool_id]['bal_incentives'])
                 debt_repaid += min(amount_per_pool, incentives[pool_id]['bal_incentives'])
+            if debt_to_aura_market - debt_repaid > 0:
         print(
-            f"Debt to aura market: {debt_to_aura_market}, Debt repaid: {debt_repaid}, debt remaining: {debt_to_aura_market - debt_repaid}")
+            f"{incentives[pool_id]['chain']}:{pool_id}}  remaining debt to aura market: {debt_to_aura_market}, Debt repaid: {debt_repaid}, debt remaining: {debt_to_aura_market - debt_repaid}")
     return incentives
 
 
