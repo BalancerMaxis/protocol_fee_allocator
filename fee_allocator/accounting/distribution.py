@@ -135,7 +135,6 @@ def re_distribute_incentives(
             amount_per_pool = 0
         else:
             amount_per_pool = round(debt_to_aura_market / num_pools_over_min, 4)
-        ## Check if all ov our
         for pool_id in pools_over_aura_min:
             ## TODO: Consider this logic as an additional test/more sensitive handlingthat could allow pool selection based
             #   on total_incentives instead of aura incentives
