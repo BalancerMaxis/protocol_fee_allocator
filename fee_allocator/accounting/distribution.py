@@ -121,14 +121,15 @@ def re_distribute_incentives(
             debt_to_aura_market += incentives_to_redistribute
 
     if debt_to_aura_market:
-        amount_per_pool =  round(debt_to_aura_market / 6, 4)
+        ## Find how many pools ever could be over min_aura_incentive
+        pools_over_aura_min = [pool_id for pool_id, _data in incentives.items() if _data['total_incentives'] >= min_aura_incentive]
+        num_pools_over_min = len(pools_over_aura_min)
+        amount_per_pool =  round(debt_to_aura_market / pools_over_aura_min, 4)
         # Create an array of the top 6 pools that received the most total_incentives
-        top_6_pools = sorted(incentives.items(), key=lambda x: x[1]['total_incentives'], reverse=True)[:6]
         # Distribute  1/6th of incentives_taken_from_aura_market to each of the top 6 pools, while subtracting the same amount from bal_incentives
-        for pool_id, _data in top_6_pools:
+        for pool_id, _data in pools_over_aura_min:
             if _data['total_incentives'] > 0:
-                # TODO:  Still an edge case here.  If amount per pool is not allocated, we'll still underallocate to
-                #   aura.  It shouldn't happen on the 6 largest pools system wide though.
+                # TODO:  Need to think about edge cases here and watch them.
                 incentives[pool_id]['aura_incentives'] += min(amount_per_pool, _data['bal_incentives'])
                 incentives[pool_id]['bal_incentives'] -= min(amount_per_pool, _data['bal_incentives'])
     return incentives
