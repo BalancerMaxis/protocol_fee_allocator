@@ -215,24 +215,17 @@ def generate_payload(web3: Web3, csv_file: str):
     )
 
     spent_usdc = payments + total_mantissa
-    print(spent_usdc)
+    vebal_usdc =  int(usdc.functions.balanceOf(safe).call() - spent_usdc) - 1 # Subtract 1 wei to avoid rounding errors
+    print(f"non veBAL flows: {spent_usdc}, remainder to veBAL: {vebal_usdc}")
     usdc_trasfer = copy.deepcopy(TRANSFER)
     usdc_trasfer["to"] = usdc.address
-    usdc_trasfer["contractInputsValues"][
-        "to"
-    ] = address_book.extras.maxiKeepers.veBalFeeInjector
-    usdc_trasfer["contractInputsValues"]["value"] = str(
-        int(usdc.functions.balanceOf(safe).call() - spent_usdc)
-    )
+    usdc_trasfer["contractInputsValues"]["to"] = address_book.extras.maxiKeepers.veBalFeeInjector
+    usdc_trasfer["contractInputsValues"]["value"] = str(vebal_usdc)
     tx_list.append(usdc_trasfer)
     bal_trasfer = TRANSFER
     bal_trasfer["to"] = address_book.extras.tokens.BAL
-    bal_trasfer["contractInputsValues"][
-        "to"
-    ] = address_book.extras.maxiKeepers.veBalFeeInjector
-    bal_trasfer["contractInputsValues"]["value"] = str(
-        bal.functions.balanceOf(safe).call()
-    )
+    bal_trasfer["contractInputsValues"]["to"] = address_book.extras.maxiKeepers.veBalFeeInjector
+    bal_trasfer["contractInputsValues"]["value"] = str(bal.functions.balanceOf(safe).call())
     tx_list.append(bal_trasfer)
     print("\n\nBuilding and pushing multisig payload")
     print("saving payload")
@@ -246,9 +239,9 @@ def generate_payload(web3: Web3, csv_file: str):
     print(f"balance: {usdc.functions.balanceOf(safe).call()}")
     print(f"USDC to Bribs: {total_mantissa}")
     print(f"USDC payments: {payments}")
-    print(f"USDC to veBAL: {usdc.functions.balanceOf(safe).call() - spent_usdc}")
+    print(f"USDC to veBAL: {vebal_usdc}")
     print(f"BAL to veBAL: {bal.functions.balanceOf(safe).call()}")
-    print(f"Total USDC to pay: {total_mantissa + payments}")
+    print(f"Total USDC to pay: {total_mantissa + payments + vebal_usdc}")
 
 
 if __name__ == "__main__":
