@@ -124,7 +124,7 @@ def re_distribute_incentives(
         ## Find how many pools ever could be over min_aura_incentive
         pools_over_aura_min = [pool_id for pool_id, _data in incentives.items() if _data['total_incentives'] >= min_aura_incentive]
         num_pools_over_min = len(pools_over_aura_min)
-        amount_per_pool =  round(debt_to_aura_market / pools_over_aura_min, 4)
+        amount_per_pool =  round(debt_to_aura_market / num_pools_over_min, 4)
         # Create an array of the top 6 pools that received the most total_incentives
         # Distribute  1/6th of incentives_taken_from_aura_market to each of the top 6 pools, while subtracting the same amount from bal_incentives
         for pool_id, _data in pools_over_aura_min:
