@@ -130,13 +130,13 @@ def re_distribute_incentives(
         ## Figure out how much to shift per pool using an even split
         amount_per_pool =  round(debt_to_aura_market / num_pools_over_min, 4)
         ## Check if all ov our
-        for pool_id, _data in pools_over_aura_min:
+        for pool_id in pools_over_aura_min:
         ## TODO: Consider this logic as an additional test/more sensitive handlingthat could allow pool selection based
         #   on total_incentives instead of aura incentives
          #   if (_data['aura_incentives'] + amount_per_pool) < min_aura_incentive:
          #         num_pools_over_min -= 1
             # Distribute the aura_debt to the pools that are over the min_aura_incentive
-            if _data['total_incentives'] > 0:
+            if incentives[pool_id]['total_incentives'] > 0:
                 # TODO:  Need to think about edge cases here and watch them.
                 incentives[pool_id]['aura_incentives'] += min(amount_per_pool, _data['bal_incentives'])
                 incentives[pool_id]['bal_incentives'] -= min(amount_per_pool, _data['bal_incentives'])
