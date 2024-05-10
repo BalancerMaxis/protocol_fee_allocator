@@ -6,6 +6,7 @@ from fee_allocator.accounting.settings import Chains
 from fee_allocator.helpers import fetch_token_price_balgql_timerange
 from bal_addresses import BalPoolsGauges
 
+
 def collect_fee_info(
     pools: list[str],
     chain: Chains,
@@ -24,7 +25,9 @@ def collect_fee_info(
     for pool in pools:
         poolutil = BalPoolsGauges(chain.value)
         if not poolutil.has_alive_preferential_gauge(pool):
-            print(f"WARNING:pool_id {pool} on {chain} is in the core pools list but has no pref gauge. Skipped.")
+            print(
+                f"WARNING:pool_id {pool} on {chain} is in the core pools list but has no pref gauge. Skipped."
+            )
             continue
         current_fees_snapshots = [x for x in pools_now if x["pool"]["id"] == pool]
         current_fees_snapshots.sort(key=lambda x: x["timestamp"], reverse=True)
