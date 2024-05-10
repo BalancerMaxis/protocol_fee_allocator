@@ -145,8 +145,8 @@ def re_distribute_incentives(
             if incentives[pool_id]['total_incentives'] > 0:
                 # TODO:  Need to think about edge cases here and watch them.
                 incentives[pool_id]['aura_incentives'] += min(amount_per_pool, incentives[pool_id]['bal_incentives'])
-                incentives[pool_id]['bal_incentives'] -= min(amount_per_pool, incentives['bal_incentives'])
-                debt_repaid += min(amount_per_pool, incentives['bal_incentives'])
+                incentives[pool_id]['bal_incentives'] -= min(amount_per_pool, incentives[pool_id]['bal_incentives'])
+                debt_repaid += min(amount_per_pool, incentives[pool_id]['bal_incentives'])
         print(
             f"Debt to aura market: {debt_to_aura_market}, Debt repaid: {debt_repaid}, debt remaining: {debt_to_aura_market - debt_repaid}")
     return incentives
