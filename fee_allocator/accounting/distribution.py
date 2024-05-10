@@ -128,7 +128,10 @@ def re_distribute_incentives(
         pools_over_aura_min = [pool_id for pool_id, _data in incentives.items() if _data['aura_incentives'] >= min_aura_incentive]
         num_pools_over_min = len(pools_over_aura_min)
         ## Figure out how much to shift per pool using an even split
-        amount_per_pool =  round(debt_to_aura_market / num_pools_over_min, 4)
+        if num_pools_over_min == 0:
+            amount_per_pool = 0
+        else:
+            amount_per_pool =  round(debt_to_aura_market / num_pools_over_min, 4)
         ## Check if all ov our
         for pool_id in pools_over_aura_min:
         ## TODO: Consider this logic as an additional test/more sensitive handlingthat could allow pool selection based
