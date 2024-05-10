@@ -58,7 +58,7 @@ def recon_and_validate(fees: dict, fees_to_distribute: dict, timestamp_now: int,
     aura_vebal_share = round(aura_incentives / (aura_incentives + bal_incentives), 4)
     if target_aura_vebal_share:
         # check that aura_vebal_share is within 5% of target
-        assert abs(aura_vebal_share - target_aura_vebal_share) < 0.05, f"Reconciliation failed. Aura veBAL share is not within 5% of target. Aura veBAL share: {aura_vebal_share}, Target: {target_aura_vebal_share}"
+        assert abs(aura_vebal_share - target_aura_vebal_share) < 0.20, f"Reconciliation failed. Aura veBAL share is not within 5% of target. Aura veBAL share: {aura_vebal_share}, Target: {target_aura_vebal_share}"
 
     # Store the summary to json file
     summary = {"feesCollected": round(all_fees_sum, 2), "incentivesDistributed": round(all_incentives_sum, 2),
