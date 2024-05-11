@@ -18,7 +18,6 @@ from fee_allocator.tx_builder.tx_builder import generate_payload
 from fee_allocator.helpers import get_block_by_ts
 from fee_allocator.helpers import calculate_aura_vebal_share
 
-
 def get_last_thursday_odd_week():
     # Use the current UTC date and time
     current_datetime = datetime.utcnow().replace(tzinfo=pytz.utc)
@@ -33,10 +32,7 @@ def get_last_thursday_odd_week():
     is_odd_week = most_recent_thursday.isocalendar()[1] % 2 == 1
 
     # If it's not an odd week or we are exactly on Thursday but need to check if the week before was odd
-    if not is_odd_week or (
-        days_since_thursday == 0
-        and (most_recent_thursday - timedelta(weeks=1)).isocalendar()[1] % 2 == 1
-    ):
+    if not is_odd_week or (days_since_thursday == 0 and (most_recent_thursday - timedelta(weeks=1)).isocalendar()[1] % 2 == 1):
         # Go back one more week if it's not an odd week
         most_recent_thursday -= timedelta(weeks=1)
 
@@ -45,12 +41,9 @@ def get_last_thursday_odd_week():
         most_recent_thursday -= timedelta(weeks=1)
 
     # Calculate the timestamp of the last Thursday at 00:00 UTC
-    last_thursday_odd_utc = most_recent_thursday.replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
+    last_thursday_odd_utc = most_recent_thursday.replace(hour=0, minute=0, second=0, microsecond=0)
 
     return last_thursday_odd_utc
-
 
 now = datetime.utcnow()
 DELTA = 1000
@@ -80,9 +73,7 @@ def main() -> None:
     # Get from input params or use default
     ts_now = parser.parse_args().ts_now or TS_NOW
     ts_in_the_past = parser.parse_args().ts_in_the_past or TS_2_WEEKS_AGO
-    print(
-        f"\n\n\n------\nRunning  from timestamps {ts_in_the_past} to {ts_now}\n------\n\n\n"
-    )
+    print(f"\n\n\n------\nRunning  from timestamps {ts_in_the_past} to {ts_now}\n------\n\n\n")
     output_file_name = parser.parse_args().output_file_name or "current_fees.csv"
     fees_file_name = parser.parse_args().fees_file_name or "current_fees_collected.json"
     fees_path = os.path.join(ROOT, "fee_allocator", "fees_collected", fees_file_name)
@@ -116,52 +107,33 @@ def main() -> None:
             Web3.HTTPProvider(
                 os.environ["GNOSISNODEURL"],
                 request_kwargs={
-                    "headers": {
-                        "Authorization": f"Bearer {os.environ['GNOSIS_API_KEY']}"
-                    }
+                    "headers": {"Authorization": f"Bearer {os.environ['GNOSIS_API_KEY']}"}
                 },
             )
         )
     except KeyError:
         print("NO gnosis key found using default that may be broken")
-        web3_instances[Chains.GNOSIS.value] = Web3.HTTPProvider(
-            "https://gnosis.publicnode.com"
-        )
+        web3_instances[Chains.GNOSIS.value] = Web3.HTTPProvider("https://gnosis.publicnode.com")
 
     web3_instances[Chains.BASE.value] = Web3(
-        Web3.HTTPProvider(os.environ.get("BASENODEURL", "https://base.llamarpc.com"))
+        Web3.HTTPProvider(os.environ.get("BASENODEURL","https://base.llamarpc.com"))
     )
     web3_instances[Chains.AVALANCHE.value] = Web3(
-        Web3.HTTPProvider(
-            os.environ.get("AVALANCHENODEURL", "https://rpc.ankr.com/avalanche")
-        )
+        Web3.HTTPProvider(os.environ.get("AVALANCHENODEURL","https://rpc.ankr.com/avalanche"))
     )
     web3_instances[Chains.ZKEVM.value] = Web3(
         Web3.HTTPProvider(os.environ.get("POLYZKEVMNODEURL", "https://zkevm-rpc.com"))
     )
     collected_fees = run_fees(
-        web3_instances,
-        ts_now,
-        ts_in_the_past,
-        output_file_name,
-        fees_to_distribute,
+        web3_instances, ts_now, ts_in_the_past, output_file_name, fees_to_distribute,
         mapped_pools_info,
     )
     _target_mainnet_block = get_block_by_ts(ts_now, Chains.MAINNET.value)
-    target_aura_vebal_share = calculate_aura_vebal_share(
-        web3_instances.mainnet, _target_mainnet_block
-    )
-    recon_and_validate(
-        collected_fees,
-        fees_to_distribute,
-        ts_now,
-        ts_in_the_past,
-        target_aura_vebal_share,
-    )
+    target_aura_vebal_share = calculate_aura_vebal_share(web3_instances.mainnet, _target_mainnet_block)
+    recon_and_validate(collected_fees, fees_to_distribute, ts_now, ts_in_the_past, target_aura_vebal_share)
     csvfile = generate_and_save_input_csv(collected_fees, ts_now, mapped_pools_info)
     if output_file_name != "current_fees.csv":
         generate_payload(web3_instances["mainnet"], csvfile)
-
 
 if __name__ == "__main__":
     main()

@@ -32,12 +32,12 @@ from fee_allocator.helpers import get_twap_bpt_price
 
 
 def run_fees(
-    web3_instances: Munch[Web3],
-    timestamp_now: int,
-    timestamp_2_weeks_ago: int,
-    output_file_name: str,
-    fees_to_distribute: dict,
-    mapped_pools_info: dict,
+        web3_instances: Munch[Web3],
+        timestamp_now: int,
+        timestamp_2_weeks_ago: int,
+        output_file_name: str,
+        fees_to_distribute: dict,
+        mapped_pools_info: dict,
 ) -> dict:
     """
     This function is used to run the fee allocation process
@@ -75,9 +75,7 @@ def run_fees(
             if poolutil.has_alive_preferential_gauge(pool_id):
                 pools[pool_id] = description
             else:
-                print(
-                    f"Warning pool {pool_id}({description}) on chain {chain} is in the core pools list but does not have a gauge.  Skipping."
-                )
+                print(f"Warning pool {pool_id}({description}) on chain {chain} is in the core pools list but does not have a gauge.  Skipping.")
         if chain.value == Chains.ZKEVM.value:
             print("SKIPPING ZKEVM DUE TO RPC ISSUES, CHANGE ME WHEN FIXED!")
             continue
@@ -162,7 +160,7 @@ def run_fees(
         **incentives[Chains.BASE.value],
         **incentives[Chains.AVALANCHE.value],
         **incentives[Chains.GNOSIS.value],
-        **incentives.get(Chains.ZKEVM.value, {}),
+        **incentives.get(Chains.ZKEVM.value, {})
     }
     joint_incentives_df = pd.DataFrame.from_dict(joint_incentives_data, orient="index")
 

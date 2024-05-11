@@ -40,7 +40,11 @@ WEB3_INSTANCES[Chains.POLYGON.value] = poly_web3
 WEB3_INSTANCES[Chains.ARBITRUM.value] = Web3(
     Web3.HTTPProvider(os.environ["ARBNODEURL"])
 )
-GNOSIS_PARAMS = {"headers": {"Authorization": f"Bearer {os.environ['GNOSIS_API_KEY']}"}}
+GNOSIS_PARAMS = {
+    "headers": {
+        "Authorization": f"Bearer {os.environ['GNOSIS_API_KEY']}"
+    }
+}
 WEB3_INSTANCES[Chains.GNOSIS.value] = Web3(
     Web3.HTTPProvider(os.environ["GNOSISNODEURL"], request_kwargs=GNOSIS_PARAMS)
 )
@@ -51,21 +55,21 @@ WEB3_INSTANCES[Chains.AVALANCHE.value] = Web3(
 
 # Define constants for Arbitrum:
 BALANCER_GRAPH_URLS = Munch()
-BALANCER_GRAPH_URLS[Chains.ARBITRUM.value] = (
-    "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-arbitrum-v2"
-)
-BALANCER_GRAPH_URLS[Chains.MAINNET.value] = (
-    "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2"
-)
-BALANCER_GRAPH_URLS[Chains.POLYGON.value] = (
-    "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2"
-)
-BALANCER_GRAPH_URLS[Chains.GNOSIS.value] = (
-    "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-gnosis-chain-v2"
-)
-BALANCER_GRAPH_URLS[Chains.BASE.value] = (
-    "https://api.studio.thegraph.com/query/24660/balancer-base-v2/version/latest"
-)
-BALANCER_GRAPH_URLS[Chains.AVALANCHE.value] = (
-    "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-avalanche-v2"
-)
+BALANCER_GRAPH_URLS[
+    Chains.ARBITRUM.value
+] = "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-arbitrum-v2"
+BALANCER_GRAPH_URLS[
+    Chains.MAINNET.value
+] = "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2"
+BALANCER_GRAPH_URLS[
+    Chains.POLYGON.value
+] = "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2"
+BALANCER_GRAPH_URLS[
+    Chains.GNOSIS.value
+] = "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-gnosis-chain-v2"
+BALANCER_GRAPH_URLS[
+    Chains.BASE.value
+] = "https://api.studio.thegraph.com/query/24660/balancer-base-v2/version/latest"
+BALANCER_GRAPH_URLS[
+    Chains.AVALANCHE.value
+] = "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-avalanche-v2"
