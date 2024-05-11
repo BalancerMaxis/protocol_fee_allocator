@@ -38,7 +38,6 @@ def calc_and_split_incentives(
         total_incentive = pool_share * fees_to_distr_wo_dao_vebal
         aura_incentives = round(total_incentive * aura_vebal_share, 4)
 
-
         # Distribute precisely now, redistribution will happen later.
         bal_incentives = round(total_incentive - aura_incentives, 4)
         fees_to_dao = round(pool_share * fees_to_distribute * dao_share, 4)
@@ -119,21 +118,42 @@ def re_distribute_incentives(
             incentives[pool_id]['aura_incentives'] = 0
             incentives[pool_id]['bal_incentives'] += incentives_to_redistribute
             debt_to_aura_market += incentives_to_redistribute
-
+    # We have now allocated all the funds to the pools that deserve it.
+    # We have also potentially moved some value to the Balancer market on pools under the min_aura_incentive
+    # As a result we have generated some debt that we owe the aura market in order to maintain the AURA/BAL split
+    # So now we find pools that have room to reallocate and adjust their split to restore the balance
     if debt_to_aura_market:
-        amount_per_pool =  round(debt_to_aura_market / 6, 4)
-        # Create an array of the top 6 pools that received the most total_incentives
-        top_6_pools = sorted(incentives.items(), key=lambda x: x[1]['total_incentives'], reverse=True)[:6]
-        # Distribute  1/6th of incentives_taken_from_aura_market to each of the top 6 pools, while subtracting the same amount from bal_incentives
-        for pool_id, _data in top_6_pools:
-            if _data['total_incentives'] > 0:
-                # TODO:  Still an edge case here.  If amount per pool is not allocated, we'll still underallocate to
-                #   aura.  It shouldn't happen on the 6 largest pools system wide though.
-                incentives[pool_id]['aura_incentives'] += min(amount_per_pool, _data['bal_incentives'])
-                incentives[pool_id]['bal_incentives'] -= min(amount_per_pool, _data['bal_incentives'])
+        debt_repaid = 0
+        ## Find how many pools ever could be over min_aura_incentive
+        pools_over_aura_min = [pool_id for pool_id, _data in incentives.items() if
+                               _data['aura_incentives'] >= min_aura_incentive]
+        num_pools_over_min = len(pools_over_aura_min)
+        ## Figure out how much to shift per pool using an even split
+        if num_pools_over_min == 0:
+            print(
+                f"WARNING: {incentives[pool_id]['chain']}:{pool_id} has no pools over min_aura_incentive, but owes {debt_to_aura_market} to the aura market.  Debt will not be repaid.")
+            amount_per_pool = 0
+        else:
+            amount_per_pool = round(debt_to_aura_market / num_pools_over_min, 4)
+        for pool_id in pools_over_aura_min:
+            ## TODO: Consider this logic as an additional test/more sensitive handlingthat could allow pool selection based
+            #   on total_incentives instead of aura incentives
+            #   if (incentives['aura_incentives'] + amount_per_pool) < min_aura_incentive:
+            #         num_pools_over_min -= 1
+            # Distribute the aura_debt to the pools that are over the min_aura_incentive
+            if incentives[pool_id]['total_incentives'] > 0:
+                # TODO:  Need to think about edge cases here and watch them.
+                incentives[pool_id]['aura_incentives'] += min(amount_per_pool, incentives[pool_id]['bal_incentives'])
+                incentives[pool_id]['bal_incentives'] -= min(amount_per_pool, incentives[pool_id]['bal_incentives'])
+                debt_repaid += min(amount_per_pool, incentives[pool_id]['bal_incentives'])
+            if debt_to_aura_market - debt_repaid >= 0:
+                print(
+                    f"{incentives[pool_id]['chain']}:{pool_id}  remaining debt to aura market: {debt_to_aura_market}, Debt repaid: {debt_repaid}, debt remaining: {debt_to_aura_market - debt_repaid}")
     return incentives
 
-def add_last_join_exit(incentives: Dict[str, Dict], chain: Chains, alertTimeStamp: Optional[int] = None) -> Dict[str, Dict]:
+
+def add_last_join_exit(incentives: Dict[str, Dict], chain: Chains, alertTimeStamp: Optional[int] = None) -> Dict[
+    str, Dict]:
     """
     adds last_join_exit for each pool in the incentives list for reporting.
     Returns the same thing as inputed with the additional field added for each line
@@ -148,7 +168,7 @@ def add_last_join_exit(incentives: Dict[str, Dict], chain: Chains, alertTimeStam
             results[pool_id]["last_join_exit"] = "Error fetching"
             continue
         gmt_time = datetime.datetime.utcfromtimestamp(timestamp)
-        human_time = gmt_time.strftime('%Y-%m-%d %H:%M:%S')+"+00:00"
+        human_time = gmt_time.strftime('%Y-%m-%d %H:%M:%S') + "+00:00"
         if alertTimeStamp and timestamp < alertTimeStamp:
             human_time = f"!!!{human_time}"
         results[pool_id]["last_join_exit"] = human_time
@@ -175,7 +195,8 @@ def re_route_incentives(
             # Increase total incentives by aura and bal incentives
             _total_incentives = _data['aura_incentives'] + _data['bal_incentives']
             if _total_incentives != _data['total_incentives']:
-                raise Exception(f"Total Incentive from data {_data['total_incentives']} does not match aura + bal incentives {_total_incentives}")
+                raise Exception(
+                    f"Total Incentive from data {_data['total_incentives']} does not match aura + bal incentives {_total_incentives}")
             incentives[reroute[chain.value][pool_id]]['total_incentives'] += _total_incentives
             # Mark source pool incentives as rerouted
             incentives[reroute[chain.value][pool_id]]['reroute_incentives'] += _total_incentives
