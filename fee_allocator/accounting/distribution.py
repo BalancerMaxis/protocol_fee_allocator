@@ -166,7 +166,7 @@ def re_distribute_incentives(
     # if not we need to redistribute all aura_incentives to bal_incentives for that pool and keep track of how much has been reallocated
 
     # First redistribute with a 30% buffer.
-    result = handle_aura_min(incentives, min_aura_incentive * 0.7)
+    result = handle_aura_min(incentives, min_aura_incentive * Decimal(0.7))
     # Now redistribute again with no buffer
     return handle_aura_min(result, min_aura_incentive)
 
