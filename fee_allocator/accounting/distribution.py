@@ -5,7 +5,7 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
-from bal_addresses import BalPoolsGauges
+from bal_tools import BalPoolsGauges
 from fee_allocator.accounting.settings import Chains
 
 

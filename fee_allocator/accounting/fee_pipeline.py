@@ -11,7 +11,7 @@ import requests
 from munch import Munch
 from web3 import Web3
 
-from bal_addresses import BalPoolsGauges
+from bal_tools import BalPoolsGauges
 from fee_allocator.accounting import PROJECT_ROOT
 from fee_allocator.accounting.collectors import collect_fee_info
 from fee_allocator.accounting.distribution import calc_and_split_incentives
