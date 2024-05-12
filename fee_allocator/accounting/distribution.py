@@ -65,6 +65,7 @@ def calc_and_split_incentives(
         }
     return pool_incentives
 
+
 def handle_aura_min(incentives: dict, min_aura_incentive: Decimal):
     """
     Redistribute all incentives away from pools that are < min_aura_incentive amount.
@@ -74,24 +75,28 @@ def handle_aura_min(incentives: dict, min_aura_incentive: Decimal):
     # We keep track of our debt to the Aura market
     debt_to_aura_market = 0
     for pool_id, _data in incentives.items():
-        if _data['aura_incentives'] < min_aura_incentive:
+        if _data["aura_incentives"] < min_aura_incentive:
             # Calculate incentives to redistribute
-            incentives_to_redistribute = _data['aura_incentives']
+            incentives_to_redistribute = _data["aura_incentives"]
             # Set incentives to redistribute to 0
-            incentives[pool_id]['aura_incentives'] = 0
-            incentives[pool_id]['bal_incentives'] += incentives_to_redistribute
+            incentives[pool_id]["aura_incentives"] = 0
+            incentives[pool_id]["bal_incentives"] += incentives_to_redistribute
             debt_to_aura_market += incentives_to_redistribute
     # Now we redistribute the debt to pools that are over the min_aura_incentive threshold
     if debt_to_aura_market:
         debt_repaid = 0
         ## Find how many pools ever could be over min_aura_incentive
-        pools_over_aura_min = [pool_id for pool_id, _data in incentives.items() if
-                               _data['aura_incentives'] >= min_aura_incentive]
+        pools_over_aura_min = [
+            pool_id
+            for pool_id, _data in incentives.items()
+            if _data["aura_incentives"] >= min_aura_incentive
+        ]
         num_pools_over_min = len(pools_over_aura_min)
         ## Figure out how much to shift per pool using an even split
         if num_pools_over_min == 0:
             print(
-                f"WARNING: {incentives[pool_id]['chain']}:{pool_id} has no pools over min_aura_incentive, but owes {debt_to_aura_market} to the aura market.  Debt will not be repaid.")
+                f"WARNING: {incentives[pool_id]['chain']}:{pool_id} has no pools over min_aura_incentive, but owes {debt_to_aura_market} to the aura market.  Debt will not be repaid."
+            )
             amount_per_pool = 0
         else:
             amount_per_pool = round(debt_to_aura_market / num_pools_over_min, 4)
@@ -101,15 +106,23 @@ def handle_aura_min(incentives: dict, min_aura_incentive: Decimal):
             #   if (incentives['aura_incentives'] + amount_per_pool) < min_aura_incentive:
             #         num_pools_over_min -= 1
             # Distribute the aura_debt to the pools that are over the min_aura_incentive
-            if incentives[pool_id]['total_incentives'] > 0:
+            if incentives[pool_id]["total_incentives"] > 0:
                 # TODO:  Need to think about edge cases here and watch them.
-                incentives[pool_id]['aura_incentives'] += min(amount_per_pool, incentives[pool_id]['bal_incentives'])
-                incentives[pool_id]['bal_incentives'] -= min(amount_per_pool, incentives[pool_id]['bal_incentives'])
-                debt_repaid += min(amount_per_pool, incentives[pool_id]['bal_incentives'])
+                incentives[pool_id]["aura_incentives"] += min(
+                    amount_per_pool, incentives[pool_id]["bal_incentives"]
+                )
+                incentives[pool_id]["bal_incentives"] -= min(
+                    amount_per_pool, incentives[pool_id]["bal_incentives"]
+                )
+                debt_repaid += min(
+                    amount_per_pool, incentives[pool_id]["bal_incentives"]
+                )
             if debt_to_aura_market - debt_repaid >= 0:
                 print(
-                    f"{incentives[pool_id]['chain']}:{pool_id}  remaining debt to aura market: {debt_to_aura_market}, Debt repaid: {debt_repaid}, debt remaining: {debt_to_aura_market - debt_repaid}")
+                    f"{incentives[pool_id]['chain']}:{pool_id}  remaining debt to aura market: {debt_to_aura_market}, Debt repaid: {debt_repaid}, debt remaining: {debt_to_aura_market - debt_repaid}"
+                )
     return incentives
+
 
 def re_distribute_incentives(
     incentives: Dict[str, Dict],
@@ -158,10 +171,10 @@ def re_distribute_incentives(
             to_receive = round(incentives_to_redistribute * pool_weight, 4)
             to_receive_aura = round(incentives_to_redistribute_aura * pool_weight, 4)
             to_receive_bal = round(incentives_to_redistribute_bal * pool_weight, 4)
-            incentives[pool_id_to_receive]['aura_incentives'] += to_receive_aura
-            incentives[pool_id_to_receive]['bal_incentives'] += to_receive_bal
-            incentives[pool_id_to_receive]['total_incentives'] += to_receive
-            incentives[pool_id_to_receive]['redirected_incentives'] += to_receive
+            incentives[pool_id_to_receive]["aura_incentives"] += to_receive_aura
+            incentives[pool_id_to_receive]["bal_incentives"] += to_receive_bal
+            incentives[pool_id_to_receive]["total_incentives"] += to_receive
+            incentives[pool_id_to_receive]["redirected_incentives"] += to_receive
     # Now after everything is done, we need to make sure that all pools have at least min_aura_incentive
     # if not we need to redistribute all aura_incentives to bal_incentives for that pool and keep track of how much has been reallocated
 
