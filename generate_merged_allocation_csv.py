@@ -6,7 +6,7 @@ import pandas as pd
 
 
 # Directory containing the CSV files
-directory = 'fee_allocator/allocations'
+directory = "fee_allocator/allocations"
 
 # Initialize an empty DataFrame to store combined data
 combined_data = pd.DataFrame()
@@ -15,13 +15,13 @@ combined_data = pd.DataFrame()
 for filename in os.listdir(directory):
     if filename.startswith("incentives_") and filename.endswith(".csv"):
         # Extract the date string from the filename without the ".csv" extension
-        date_string = filename.replace("incentives_","").replace(".csv", "")
+        date_string = filename.replace("incentives_", "").replace(".csv", "")
         # Read the CSV file
         df = pd.read_csv(os.path.join(directory, filename))
         # Add a new column for the date string
-        df['date string'] = date_string
+        df["date string"] = date_string
         # Append the data to the combined DataFrame
         combined_data = pd.concat([combined_data, df])
 
 # Write the combined data to a single CSV file
-combined_data.to_csv(os.path.join(directory, 'combined_incentives.csv'), index=False)
+combined_data.to_csv(os.path.join(directory, "combined_incentives.csv"), index=False)
