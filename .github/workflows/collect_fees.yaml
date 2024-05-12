@@ -44,7 +44,7 @@ jobs:
         python3 generate_merged_allocation_csv.py
     - name: Create PR
       id: cpr
-      uses: peter-evans/create-pull-request@v5
+      uses: peter-evans/create-pull-request@v6
       with:
         commit-message: "task: new fees report ending ${{ github.events.inputs.end_day }}"
         title: "Biweekly Fee Report ending ${{ github.events.inputs.end_day }}"
