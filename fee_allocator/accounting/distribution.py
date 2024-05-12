@@ -178,7 +178,7 @@ def re_distribute_incentives(
     # Now after everything is done, we need to make sure that all pools have at least min_aura_incentive
     # if not we need to redistribute all aura_incentives to bal_incentives for that pool and keep track of how much has been reallocated
 
-    first_pass_buffer = 0.5
+    first_pass_buffer = 0.25
     # First redistribute with a % buffer.
     print(f"Redistributing Aura with a {first_pass_buffer} buffer.")
     result = handle_aura_min(
