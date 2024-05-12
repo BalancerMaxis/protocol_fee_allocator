@@ -85,7 +85,7 @@ def main() -> None:
     )
     output_file_name = parser.parse_args().output_file_name or "current_fees.csv"
     fees_file_name = parser.parse_args().fees_file_name or "current_fees_collected.json"
-    fees_path = f"fee_allocator/fees_collected/{fees_file_name})"
+    fees_path = f"fee_allocator/fees_collected/{fees_file_name}"
     with open(fees_path) as f:
         fees_to_distribute = json.load(f)
     pools_info = fetch_all_pools_info()
