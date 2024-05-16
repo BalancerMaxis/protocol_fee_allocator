@@ -128,7 +128,7 @@ def re_distribute_incentives(
     incentives: Dict[str, Dict],
     min_aura_incentive: Decimal,
     min_incentive_amount: Decimal,
-    aura_vebal_share: Decimal,
+    first_pass_buffer: Decimal = Decimal(0.25),
 ) -> Dict[str, Dict]:
     """
     Redistribute all incentives away from pools that are < min_vote_incentive amount
@@ -178,7 +178,6 @@ def re_distribute_incentives(
     # Now after everything is done, we need to make sure that all pools have at least min_aura_incentive
     # if not we need to redistribute all aura_incentives to bal_incentives for that pool and keep track of how much has been reallocated
 
-    first_pass_buffer = 0.25
     # First redistribute with a % buffer.
     print(f"Redistributing Aura with a {first_pass_buffer} buffer.")
     result = handle_aura_min(
