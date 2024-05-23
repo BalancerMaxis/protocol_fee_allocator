@@ -11,7 +11,7 @@ import requests
 from munch import Munch
 from web3 import Web3
 
-from bal_addresses import BalPoolsGauges
+from bal_tools import BalPoolsGauges
 from fee_allocator.accounting import PROJECT_ROOT
 from fee_allocator.accounting.collectors import collect_fee_info
 from fee_allocator.accounting.distribution import calc_and_split_incentives
@@ -150,7 +150,6 @@ def run_fees(
             re_routed_incentives,
             Decimal(fee_constants["min_aura_incentive"]),
             Decimal(fee_constants["min_vote_incentive_amount"]),
-            aura_vebal_share=Decimal(aura_vebal_share),
         )
         ## Add data about last join/exit
         incentives[chain.value] = add_last_join_exit(redistributed_incentives, chain)

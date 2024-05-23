@@ -5,7 +5,7 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
-from bal_addresses import BalPoolsGauges
+from bal_tools import BalPoolsGauges
 from fee_allocator.accounting.settings import Chains
 
 
@@ -66,11 +66,69 @@ def calc_and_split_incentives(
     return pool_incentives
 
 
+def handle_aura_min(incentives: dict, min_aura_incentive: Decimal):
+    """
+    Redistribute all incentives away from pools that are < min_aura_incentive amount.
+    Compensate by moving bal incentives to Aura incentives on pools that are already over the limit
+    """
+    # First we shift all incentives from pools that are under the min_aura_incentive to the balancer market
+    # We keep track of our debt to the Aura market
+    debt_to_aura_market = 0
+    for pool_id, _data in incentives.items():
+        if _data["aura_incentives"] < min_aura_incentive:
+            # Calculate incentives to redistribute
+            incentives_to_redistribute = _data["aura_incentives"]
+            # Set incentives to redistribute to 0
+            incentives[pool_id]["aura_incentives"] = 0
+            incentives[pool_id]["bal_incentives"] += incentives_to_redistribute
+            debt_to_aura_market += incentives_to_redistribute
+    # Now we redistribute the debt to pools that are over the min_aura_incentive threshold
+    if debt_to_aura_market:
+        debt_repaid = 0
+        ## Find how many pools ever could be over min_aura_incentive
+        pools_over_aura_min = [
+            pool_id
+            for pool_id, _data in incentives.items()
+            if _data["aura_incentives"] >= min_aura_incentive
+        ]
+        num_pools_over_min = len(pools_over_aura_min)
+        ## Figure out how much to shift per pool using an even split
+        if num_pools_over_min == 0:
+            print(
+                f"WARNING: {incentives[pool_id]['chain']}:{pool_id} has no pools over min_aura_incentive, but owes {debt_to_aura_market} to the aura market.  Debt will not be repaid."
+            )
+            amount_per_pool = 0
+        else:
+            amount_per_pool = round(debt_to_aura_market / num_pools_over_min, 4)
+        for pool_id in pools_over_aura_min:
+            ## TODO: Consider this logic as an additional test/more sensitive handlingthat could allow pool selection based
+            #   on total_incentives instead of aura incentives
+            #   if (incentives['aura_incentives'] + amount_per_pool) < min_aura_incentive:
+            #         num_pools_over_min -= 1
+            # Distribute the aura_debt to the pools that are over the min_aura_incentive
+            if incentives[pool_id]["total_incentives"] > 0:
+                # TODO:  Need to think about edge cases here and watch them.
+                incentives[pool_id]["aura_incentives"] += min(
+                    amount_per_pool, incentives[pool_id]["bal_incentives"]
+                )
+                incentives[pool_id]["bal_incentives"] -= min(
+                    amount_per_pool, incentives[pool_id]["bal_incentives"]
+                )
+                debt_repaid += min(
+                    amount_per_pool, incentives[pool_id]["bal_incentives"]
+                )
+            if debt_to_aura_market - debt_repaid >= 0:
+                print(
+                    f"{incentives[pool_id]['chain']}:{pool_id}  remaining debt to aura market: {debt_to_aura_market}, Debt repaid: {debt_repaid}, debt remaining: {debt_to_aura_market - debt_repaid}"
+                )
+    return incentives
+
+
 def re_distribute_incentives(
     incentives: Dict[str, Dict],
     min_aura_incentive: Decimal,
     min_incentive_amount: Decimal,
-    aura_vebal_share: Decimal,
+    first_pass_buffer: Decimal = Decimal(0.25),
 ) -> Dict[str, Dict]:
     """
     Redistribute all incentives away from pools that are < min_vote_incentive amount
@@ -117,60 +175,17 @@ def re_distribute_incentives(
             incentives[pool_id_to_receive]["bal_incentives"] += to_receive_bal
             incentives[pool_id_to_receive]["total_incentives"] += to_receive
             incentives[pool_id_to_receive]["redirected_incentives"] += to_receive
-    ## Now after everything is done, we need to make sure that all pools have at least min_aura_incentive
-    ## if not we need to redistribute all aura_incentives to bal_incentives for that pool and keep track of how much has been reallocated
-    debt_to_aura_market = 0
-    for pool_id, _data in incentives.items():
-        if _data["aura_incentives"] < min_aura_incentive:
-            # Calculate incentives to redistribute
-            incentives_to_redistribute = _data["aura_incentives"]
-            # Set incentives to redistribute to 0
-            incentives[pool_id]["aura_incentives"] = 0
-            incentives[pool_id]["bal_incentives"] += incentives_to_redistribute
-            debt_to_aura_market += incentives_to_redistribute
-    # We have now allocated all the funds to the pools that deserve it.
-    # We have also potentially moved some value to the Balancer market on pools under the min_aura_incentive
-    # As a result we have generated some debt that we owe the aura market in order to maintain the AURA/BAL split
-    # So now we find pools that have room to reallocate and adjust their split to restore the balance
-    if debt_to_aura_market:
-        debt_repaid = 0
-        ## Find how many pools ever could be over min_aura_incentive
-        pools_over_aura_min = [
-            pool_id
-            for pool_id, _data in incentives.items()
-            if _data["aura_incentives"] >= min_aura_incentive
-        ]
-        num_pools_over_min = len(pools_over_aura_min)
-        ## Figure out how much to shift per pool using an even split
-        if num_pools_over_min == 0:
-            print(
-                f"WARNING: {incentives[pool_id]['chain']}:{pool_id} has no pools over min_aura_incentive, but owes {debt_to_aura_market} to the aura market.  Debt will not be repaid."
-            )
-            amount_per_pool = 0
-        else:
-            amount_per_pool = round(debt_to_aura_market / num_pools_over_min, 4)
-        for pool_id in pools_over_aura_min:
-            ## TODO: Consider this logic as an additional test/more sensitive handlingthat could allow pool selection based
-            #   on total_incentives instead of aura incentives
-            #   if (incentives['aura_incentives'] + amount_per_pool) < min_aura_incentive:
-            #         num_pools_over_min -= 1
-            # Distribute the aura_debt to the pools that are over the min_aura_incentive
-            if incentives[pool_id]["total_incentives"] > 0:
-                # TODO:  Need to think about edge cases here and watch them.
-                incentives[pool_id]["aura_incentives"] += min(
-                    amount_per_pool, incentives[pool_id]["bal_incentives"]
-                )
-                incentives[pool_id]["bal_incentives"] -= min(
-                    amount_per_pool, incentives[pool_id]["bal_incentives"]
-                )
-                debt_repaid += min(
-                    amount_per_pool, incentives[pool_id]["bal_incentives"]
-                )
-            if debt_to_aura_market - debt_repaid >= 0:
-                print(
-                    f"{incentives[pool_id]['chain']}:{pool_id}  remaining debt to aura market: {debt_to_aura_market}, Debt repaid: {debt_repaid}, debt remaining: {debt_to_aura_market - debt_repaid}"
-                )
-    return incentives
+    # Now after everything is done, we need to make sure that all pools have at least min_aura_incentive
+    # if not we need to redistribute all aura_incentives to bal_incentives for that pool and keep track of how much has been reallocated
+
+    # First redistribute with a % buffer.
+    print(f"Redistributing Aura with a {first_pass_buffer} buffer.")
+    result = handle_aura_min(
+        incentives, min_aura_incentive * Decimal(1 - first_pass_buffer)
+    )
+    # Now redistribute again with no buffer
+    print(f"Final pass: Redistributing Aura with no buffer.")
+    return handle_aura_min(result, min_aura_incentive)
 
 
 def add_last_join_exit(

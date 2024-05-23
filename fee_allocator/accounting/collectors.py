@@ -4,7 +4,7 @@ from typing import Dict
 
 from fee_allocator.accounting.settings import Chains
 from fee_allocator.helpers import fetch_token_price_balgql_timerange
-from bal_addresses import BalPoolsGauges
+from bal_tools import BalPoolsGauges
 
 
 def collect_fee_info(
