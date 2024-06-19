@@ -171,5 +171,13 @@ def run_fees(
     allocations_file_name = os.path.join(
         PROJECT_ROOT, f"fee_allocator/allocations/{output_file_name}"
     )
+
+    ## Prettify the earned fees data for csv by deweifying amounts
+    decimal_columns = incentives_df_sorted.select_dtypes(include=["decimal"]).columns
+    ## We're handling USDC so 1e6
+    for column in decimal_columns:
+        incentives_df_sorted[column] = incentives_df_sorted[column].apply(
+            lambda x: x / 1e6
+        )
     incentives_df_sorted.to_csv(allocations_file_name)
     return joint_incentives_data
