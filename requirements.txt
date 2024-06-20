@@ -5,4 +5,4 @@ pycoingecko==3.1.0
 pandas>2.0,<2.3
 simplejson==3.19.2
 git+https://github.com/BalancerMaxis/bal_addresses@0.9.5
-git+https://github.com/BalancerMaxis/bal_tools@v0.0.1
+git+https://github.com/BalancerMaxis/bal_tools@v0.0.3
