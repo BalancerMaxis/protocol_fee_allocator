@@ -192,7 +192,7 @@ def run_fees(
     ## We're handling USDC so 1e6
     for column in decimal_columns:
         incentives_df_sorted[column] = incentives_df_sorted[column].apply(
-            lambda x: x / 1e6
+            lambda x: x / Decimal(1e6)
         )
     # Save dataframe to CSV
     allocations_file_name = os.path.join(
