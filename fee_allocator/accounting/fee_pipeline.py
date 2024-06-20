@@ -1,8 +1,7 @@
 import datetime
 import os
-import json
 
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 from typing import Dict
 from typing import List
 
@@ -17,7 +16,6 @@ from fee_allocator.accounting.collectors import collect_fee_info
 from fee_allocator.accounting.distribution import calc_and_split_incentives
 from fee_allocator.accounting.distribution import re_distribute_incentives
 from fee_allocator.accounting.distribution import re_route_incentives
-from fee_allocator.accounting.distribution import add_last_join_exit
 from fee_allocator.accounting.logger import logger
 from fee_allocator.accounting.settings import BALANCER_GRAPH_URLS
 from fee_allocator.accounting.settings import CORE_POOLS_URL
@@ -46,6 +44,15 @@ def run_fees(
     core_pools = requests.get(CORE_POOLS_URL).json()
     # Fetch fee constants:
     fee_constants = requests.get(FEE_CONSTANTS_URL).json()
+    # transform token amounts into wei
+    for key in [
+        "min_aura_incentive",
+        "min_vote_incentive_amount",
+        "min_aura_incentive",
+    ]:
+        fee_constants[key] = Decimal(
+            fee_constants[key] * Decimal(1e6)
+        ).to_integral_value(rounding=ROUND_DOWN)
     # Fetch re-route config:
     reroute_config = requests.get(REROUTE_CONFIG_URL).json()
     target_blocks = {}
@@ -146,14 +153,12 @@ def run_fees(
             mapped_pools_info,
         )
         re_routed_incentives = re_route_incentives(_incentives, chain, reroute_config)
-        redistributed_incentives = re_distribute_incentives(
+        incentives[chain.value] = re_distribute_incentives(
             re_routed_incentives,
             Decimal(fee_constants["min_aura_incentive"]),
             Decimal(fee_constants["min_vote_incentive_amount"]),
         )
-        ## Add data about last join/exit
-        incentives[chain.value] = add_last_join_exit(redistributed_incentives, chain)
-    # Wrap into dataframe and sort by earned fees and store to csv
+        # Wrap into dataframe and sort by earned fees and store to csv
     joint_incentives_data = {
         **incentives[Chains.MAINNET.value],
         **incentives[Chains.ARBITRUM.value],
@@ -163,11 +168,35 @@ def run_fees(
         **incentives[Chains.GNOSIS.value],
         **incentives.get(Chains.ZKEVM.value, {}),
     }
-    joint_incentives_df = pd.DataFrame.from_dict(joint_incentives_data, orient="index")
 
+    # Prepare the CSV in a dataframe
+    joint_incentives_df = pd.DataFrame.from_dict(joint_incentives_data, orient="index")
+    # Sort by chain and earned fees
     incentives_df_sorted = joint_incentives_df.sort_values(
         by=["chain", "earned_fees"], ascending=False
     )
+
+    ## Find Numbers which are all stored in Decimals
+    # Select 'object' dtype columns
+    object_columns = incentives_df_sorted.select_dtypes(include=["object"]).columns
+
+    # Filter those columns which contain Decimal values
+    decimal_columns = [
+        col
+        for col in object_columns
+        if isinstance(incentives_df_sorted[col][0], Decimal)
+    ]
+
+    # create a final row that sums all Decimal columns
+    incentives_df_sorted.loc["Total"] = incentives_df_sorted[decimal_columns].sum()
+
+    # Translate wei amounts into human readable format for the csv.  We're handling USDC so 1e6
+
+    for column in decimal_columns:
+        incentives_df_sorted[column] = incentives_df_sorted[column].apply(
+            lambda x: x / Decimal(1e6)
+        )
+    # Save dataframe to CSV
     allocations_file_name = os.path.join(
         PROJECT_ROOT, f"fee_allocator/allocations/{output_file_name}"
     )

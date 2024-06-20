@@ -9,6 +9,8 @@ import simplejson as json
 
 from fee_allocator.accounting import PROJECT_ROOT
 
+usdc_scaling_factor = Decimal(1e6)
+
 
 def recon_and_validate(
     fees: dict,
@@ -71,49 +73,54 @@ def recon_and_validate(
             fee_info["total_incentives"] >= 0
         ), f"Recon Failed: {fee_info['pool_id???']} Balancer incentives of {fee_info['total_incentives']}should be >= 0"
 
-    assert abs_delta < Decimal(0.15), f"Reconciliation failed. Delta: {delta}"
+    assert (
+        abs_delta < Decimal(0.15) / usdc_scaling_factor
+    ), f"Reconciliation failed. Delta: {delta}"
     print(f"During recon found a delta of {delta}")
     # Make sure all SUM(pct) == 1
     assert (
         round(
-            aura_incentives / all_incentives_sum
-            + bal_incentives / all_incentives_sum
-            + fees_to_dao / all_incentives_sum
-            + fees_to_vebal / all_incentives_sum,
+            float(
+                aura_incentives / all_incentives_sum
+                + bal_incentives / all_incentives_sum
+                + fees_to_dao / all_incentives_sum
+                + fees_to_vebal / all_incentives_sum,
+            ),
             4,
         )
         == 1
     ), "Reconciliation failed. Sum of percentages is not equal to 1"
     # calvulate aura veBAL share
-    aura_vebal_share = round(aura_incentives / (aura_incentives + bal_incentives), 4)
+    aura_vebal_share = round(
+        float(aura_incentives / (aura_incentives + bal_incentives)), 4
+    )
     if target_aura_vebal_share:
         # check that aura_vebal_share is within 5% of target
         assert (
-            abs(aura_vebal_share - target_aura_vebal_share) < 0.05
+            abs(aura_vebal_share - float(target_aura_vebal_share)) < 0.05
         ), f"Reconciliation failed. Aura veBAL share is not within 5% of target. Aura veBAL share: {aura_vebal_share}, Target: {target_aura_vebal_share}"
 
     # Store the summary to json file
     summary = {
-        "feesCollected": round(all_fees_sum, 2),
-        "incentivesDistributed": round(all_incentives_sum, 2),
-        "feesNotDistributed": round(delta, 2),
-        "auraIncentives": round(aura_incentives, 2),
-        "balIncentives": round(bal_incentives, 2),
-        "feesToDao": round(fees_to_dao, 2),
-        "feesToVebal": round(fees_to_vebal, 2),
-        "auravebalShare": round(aura_vebal_share, 2),
-        "auraIncentivesPct": round(aura_incentives / all_incentives_sum, 4),
+        "feesCollected": all_fees_sum / usdc_scaling_factor,
+        "incentivesDistributed": all_incentives_sum / usdc_scaling_factor,
+        "feesNotDistributed": delta / usdc_scaling_factor,
+        "auraIncentives": aura_incentives / usdc_scaling_factor,
+        "balIncentives": bal_incentives / usdc_scaling_factor,
+        "feesToDao": fees_to_dao / usdc_scaling_factor,
+        "feesToVebal": fees_to_vebal / usdc_scaling_factor,
+        "auravebalShare": aura_vebal_share,
+        "auraIncentivesPct": round(float(aura_incentives / all_incentives_sum), 4),
         "auraIncentivesPctTotal": round(
-            aura_incentives / (aura_incentives + bal_incentives), 4
+            float(aura_incentives / (aura_incentives + bal_incentives)), 4
         ),
-        "balIncentivesPct": round(bal_incentives / all_incentives_sum, 4),
+        "balIncentivesPct": round(float(bal_incentives / all_incentives_sum), 4),
         "balIncentivesPctTotal": round(
-            bal_incentives / (aura_incentives + bal_incentives), 4
+            float(bal_incentives / (aura_incentives + bal_incentives)), 4
         ),
-        "feesToDaoPct": round(fees_to_dao / all_incentives_sum, 4),
-        "feesToVebalPct": round(
-            fees_to_vebal / all_incentives_sum, 4
-        ),  # UNIX timestamp
+        "feesToDaoPct": round(float(fees_to_dao / all_incentives_sum), 4),
+        "feesToVebalPct": round(float(fees_to_vebal / all_incentives_sum), 4),
+        # UNIX timestamp
         "createdAt": int(datetime.datetime.now().timestamp()),
         "periodStart": timestamp_2_weeks_ago,
         "periodEnd": timestamp_now,
@@ -143,7 +150,7 @@ def recon_and_validate(
 
 def generate_and_save_input_csv(
     fees: dict, period_ends: int, mapped_pools_info: Dict
-) -> None:
+) -> str:
     """
     Function that generates and saves csv in format:
     target_root_gauge,platform,amount_of_incentives
@@ -172,7 +179,7 @@ def generate_and_save_input_csv(
             {
                 "target": mapped_pools_info[pool_id],
                 "platform": "aura",
-                "amount": round(fee_item["aura_incentives"], 4),
+                "amount": fee_item["aura_incentives"],
             }
         )
         # Bal incentives
@@ -180,7 +187,7 @@ def generate_and_save_input_csv(
             {
                 "target": mapped_pools_info[pool_id],
                 "platform": "balancer",
-                "amount": round(fee_item["bal_incentives"], 4),
+                "amount": fee_item["bal_incentives"],
             }
         )
     # Add DAO share to the output
@@ -189,7 +196,7 @@ def generate_and_save_input_csv(
         {
             "target": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",  # DAO msig
             "platform": "payment",
-            "amount": round(dao_share, 4),
+            "amount": dao_share,
         }
     )
     # Convert to dataframe and save to csv

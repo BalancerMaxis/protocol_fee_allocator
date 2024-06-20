@@ -1,6 +1,5 @@
-import math
 import datetime
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -43,18 +42,31 @@ def calc_and_split_incentives(
         pool_fees = data["bpt_token_fee_in_usd"] + data["token_fees_in_usd"]
         pool_share = pool_fees / Decimal(total_fees)
         # If aura incentives is less than 500 USDC, we pay all incentives to balancer
-        total_incentive = pool_share * fees_to_distr_wo_dao_vebal
-        aura_incentives = round(total_incentive * aura_vebal_share, 4)
+        total_incentive = (pool_share * fees_to_distr_wo_dao_vebal).to_integral_value(
+            rounding=ROUND_DOWN
+        )
+        aura_incentives = (total_incentive * aura_vebal_share).to_integral_value(
+            rounding=ROUND_DOWN
+        )
 
         # Distribute precisely now, redistribution will happen later.
-        bal_incentives = round(total_incentive - aura_incentives, 4)
-        fees_to_dao = round(pool_share * fees_to_distribute * dao_share, 4)
-        fees_to_vebal = round(pool_share * fees_to_distribute * vebal_share, 4)
+        bal_incentives = (total_incentive - aura_incentives).to_integral_value(
+            rounding=ROUND_DOWN
+        )
+
+        fees_to_dao = (pool_share * fees_to_distribute * dao_share).to_integral_value(
+            rounding=ROUND_DOWN
+        )
+        fees_to_vebal = (
+            pool_share * fees_to_distribute * vebal_share
+        ).to_integral_value(rounding=ROUND_DOWN)
         # Split fees between aura and bal fees
         pool_incentives[pool] = {
             "chain": chain,
             "symbol": data["symbol"],
+            "last_join_exit": get_last_join_exit(pool, Chains(chain)),
             "earned_fees": pool_fees,
+            "total_to_distribute": total_incentive + fees_to_dao + fees_to_vebal,
             "fees_to_vebal": fees_to_vebal,
             "fees_to_dao": fees_to_dao,
             "total_incentives": aura_incentives + bal_incentives,
@@ -99,7 +111,7 @@ def handle_aura_min(incentives: dict, min_aura_incentive: Decimal):
             )
             amount_per_pool = 0
         else:
-            amount_per_pool = round(debt_to_aura_market / num_pools_over_min, 4)
+            amount_per_pool = round(debt_to_aura_market / num_pools_over_min, 2)
         for pool_id in pools_over_aura_min:
             ## TODO: Consider this logic as an additional test/more sensitive handlingthat could allow pool selection based
             #   on total_incentives instead of aura incentives
@@ -168,9 +180,16 @@ def re_distribute_incentives(
             # Calculate pool weight:
             pool_weight = _pool_weights[pool_id_to_receive]
             # Calculate incentives to receive
-            to_receive = round(incentives_to_redistribute * pool_weight, 4)
-            to_receive_aura = round(incentives_to_redistribute_aura * pool_weight, 4)
-            to_receive_bal = round(incentives_to_redistribute_bal * pool_weight, 4)
+            to_receive = (incentives_to_redistribute * pool_weight).to_integral_value(
+                rounding=ROUND_DOWN
+            )
+            to_receive_aura = (
+                incentives_to_redistribute_aura * pool_weight
+            ).to_integral_value(rounding=ROUND_DOWN)
+            to_receive_bal = (
+                incentives_to_redistribute_bal * pool_weight
+            ).to_integral_value(rounding=ROUND_DOWN)
+
             incentives[pool_id_to_receive]["aura_incentives"] += to_receive_aura
             incentives[pool_id_to_receive]["bal_incentives"] += to_receive_bal
             incentives[pool_id_to_receive]["total_incentives"] += to_receive
@@ -186,6 +205,26 @@ def re_distribute_incentives(
     # Now redistribute again with no buffer
     print(f"Final pass: Redistributing Aura with no buffer.")
     return handle_aura_min(result, min_aura_incentive)
+
+
+def get_last_join_exit(
+    pool_id: str, chain: Chains, alertTimeStamp: Optional[int] = None
+) -> str:
+    """
+    adds last_join_exit for each pool in the incentives list for reporting.
+    Returns the same thing as inputed with the additional field added for each line
+    """
+    q = BalPoolsGauges(chain.value)
+    results = {}
+    try:
+        timestamp = q.get_last_join_exit(pool_id)
+    except:
+        return "Error fetching"
+    gmt_time = datetime.datetime.utcfromtimestamp(timestamp)
+    human_time = gmt_time.strftime("%Y-%m-%d %H:%M:%S") + "+00:00"
+    if alertTimeStamp and timestamp < alertTimeStamp:
+        human_time = f"!!!{human_time}"
+    return human_time
 
 
 def add_last_join_exit(
