@@ -27,6 +27,7 @@ query ($proposal_id: String) {
 }
 """
 
+usdc_mantissa_multilpier = int(1e6)
 module_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Load bribe_balancer.json
@@ -111,8 +112,6 @@ def generate_payload(web3: Web3, csv_file: str):
         address=address_book.extras.tokens.USDC,
         abi=get_abi("ERC20"),
     )
-    usdc_decimals = usdc.functions.decimals().call()
-    usdc_mantissa_multilpier = 10 ** int(usdc_decimals)
 
     bribe_vault = address_book.extras.hidden_hand2.bribe_vault
     bribes = process_bribe_csv(csv_file)
@@ -137,7 +136,7 @@ def generate_payload(web3: Web3, csv_file: str):
         print(f"Paying out {amount} via direct transfer to {target}")
         transfer = copy.deepcopy(TRANSFER)
         transfer["to"] = address_book.extras.tokens.USDC
-        transfer["contractInputsValues"]["value"] = str(int(usdc_amount))
+        transfer["contractInputsValues"]["value"] = str(int(amount))
         print("----------------------------------")
         print(transfer["contractInputsValues"]["value"])
         transfer["contractInputsValues"]["to"] = target
@@ -152,7 +151,7 @@ def generate_payload(web3: Web3, csv_file: str):
     print(f"*** Payment USDC: {total_payments}")
     print(f"*** Total USDC: {total_brib_usdc + total_payments}")
     print(
-        f"*** Human readable total USDC: {(total_brib_usdc + total_payments)/usdc_mantissa_multiplier}"
+        f"*** Human readable total USDC: {(total_brib_usdc + total_payments)/usdc_mantissa_multilpier}"
     )
 
     # BALANCER
@@ -238,12 +237,14 @@ def generate_payload(web3: Web3, csv_file: str):
     with open(output_file_path, "w") as tx_file:
         json.dump(payload, tx_file, indent=2)
     print(f"balance: {usdc.functions.balanceOf(safe).call()}")
-    print(f"USDC to Bribs: {bribe}({bribe/usdc_mantissa_multilpier})")
+    print(
+        f"USDC to Bribs: {total_brib_usdc}({total_brib_usdc/usdc_mantissa_multilpier})"
+    )
     print(f"USDC payments: {total_payments}({total_payments/usdc_mantissa_multilpier})")
     print(f"USDC to veBAL: {vebal_usdc}({vebal_usdc/usdc_mantissa_multilpier})")
     print(f"BAL to veBAL: {bal.functions.balanceOf(safe).call()}")
     print(
-        f"Total USDC to pay: {total_mantissa + total_payments + vebal_usdc}({(total_mantissa + total_payments + vebal_usdc)/usdc_mantissa_multilpier})"
+        f"Total USDC to pay: {total_brib_usdc + total_payments + vebal_usdc}({(total_brib_usdc + total_payments + vebal_usdc)/usdc_mantissa_multilpier})"
     )
 
 
