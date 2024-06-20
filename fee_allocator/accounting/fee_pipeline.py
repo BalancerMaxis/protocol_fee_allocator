@@ -163,21 +163,40 @@ def run_fees(
         **incentives[Chains.GNOSIS.value],
         **incentives.get(Chains.ZKEVM.value, {}),
     }
-    joint_incentives_df = pd.DataFrame.from_dict(joint_incentives_data, orient="index")
 
+    # Prepare the CSV in a dataframe
+    joint_incentives_df = pd.DataFrame.from_dict(joint_incentives_data, orient="index")
+    # Sort by chain and earned fees
     incentives_df_sorted = joint_incentives_df.sort_values(
         by=["chain", "earned_fees"], ascending=False
     )
-    allocations_file_name = os.path.join(
-        PROJECT_ROOT, f"fee_allocator/allocations/{output_file_name}"
-    )
+    # move total_to_distribute in joint_incentives_df into the 6th position after earned_fees
+    cols = incentives_df_sorted.columns.tolist()
+    cols.insert(6, cols.pop(cols.index("total_to_distribute")))
+    incentives_df_sorted = incentives_df_sorted.reindex(columns=cols)
 
-    ## Prettify the earned fees data for csv by deweifying amounts
-    decimal_columns = incentives_df_sorted.select_dtypes(include=["decimal"]).columns
+    ## Find Numbers which are all stored in Decimals
+    # Select 'object' dtype columns
+    object_columns = incentives_df_sorted.select_dtypes(include=["object"]).columns
+
+    # Filter those columns which contain Decimal values
+    decimal_columns = [
+        col
+        for col in object_columns
+        if isinstance(incentives_df_sorted[col][0], Decimal)
+    ]
+
+    # create a final row that sums all Decimal columns
+    incentives_df_sorted.loc["Total"] = incentives_df_sorted[decimal_columns].sum()
+
     ## We're handling USDC so 1e6
     for column in decimal_columns:
         incentives_df_sorted[column] = incentives_df_sorted[column].apply(
-            lambda x: x / 1e6
+            lambda x: x / Decimal(1e6)
         )
+    # Save dataframe to CSV
+    allocations_file_name = os.path.join(
+        PROJECT_ROOT, f"fee_allocator/allocations/{output_file_name}"
+    )
     incentives_df_sorted.to_csv(allocations_file_name)
     return joint_incentives_data
