@@ -153,13 +153,12 @@ def run_fees(
             mapped_pools_info,
         )
         re_routed_incentives = re_route_incentives(_incentives, chain, reroute_config)
-        redistributed_incentives = re_distribute_incentives(
+        incentives[chain.value] = re_distribute_incentives(
             re_routed_incentives,
             Decimal(fee_constants["min_aura_incentive"]),
             Decimal(fee_constants["min_vote_incentive_amount"]),
         )
-    incentives = redistributed_incentives
-    # Wrap into dataframe and sort by earned fees and store to csv
+        # Wrap into dataframe and sort by earned fees and store to csv
     joint_incentives_data = {
         **incentives[Chains.MAINNET.value],
         **incentives[Chains.ARBITRUM.value],
