@@ -154,6 +154,7 @@ def generate_payload(web3: Web3, csv_file: str):
     print(
         f"*** Human readable total USDC: {(total_brib_usdc + total_payments)/usdc_mantissa_multiplier}"
     )
+
     # BALANCER
     def bribe_balancer(gauge, bribe_amount):
         prop = Web3.solidity_keccak(["address"], [Web3.to_checksum_address(gauge)])
