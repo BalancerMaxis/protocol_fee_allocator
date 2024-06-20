@@ -55,6 +55,7 @@ def calc_and_split_incentives(
             "chain": chain,
             "symbol": data["symbol"],
             "earned_fees": pool_fees,
+            "total_to_distribute": total_incentive + fees_to_dao + fees_to_vebal,
             "fees_to_vebal": fees_to_vebal,
             "fees_to_dao": fees_to_dao,
             "total_incentives": aura_incentives + bal_incentives,
