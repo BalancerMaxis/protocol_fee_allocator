@@ -50,9 +50,9 @@ def run_fees(
         "min_vote_incentive_amount",
         "min_aura_incentive",
     ]:
-        fee_constants[key] = Decimal(fee_constants[key] * 1e6).to_integral_value(
-            rounding=ROUND_DOWN
-        )
+        fee_constants[key] = Decimal(
+            fee_constants[key] * Decimal(1e6)
+        ).to_integral_value(rounding=ROUND_DOWN)
     # Fetch re-route config:
     reroute_config = requests.get(REROUTE_CONFIG_URL).json()
     target_blocks = {}
