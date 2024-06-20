@@ -180,21 +180,16 @@ def re_distribute_incentives(
             # Calculate pool weight:
             pool_weight = _pool_weights[pool_id_to_receive]
             # Calculate incentives to receive
-            to_receive = (
-                (incentives_to_redistribute * pool_weight).to_integral_value(
-                    rounding=ROUND_DOWN
-                ),
+            to_receive = (incentives_to_redistribute * pool_weight).to_integral_value(
+                rounding=ROUND_DOWN
             )
             to_receive_aura = (
-                (incentives_to_redistribute_aura * pool_weight).to_integral_value(
-                    rounding=ROUND_DOWN
-                ),
-            )
+                incentives_to_redistribute_aura * pool_weight
+            ).to_integral_value(rounding=ROUND_DOWN)
             to_receive_bal = (
-                (incentives_to_redistribute_bal * pool_weight).to_integral_value(
-                    rounding=ROUND_DOWN
-                ),
-            )
+                incentives_to_redistribute_bal * pool_weight
+            ).to_integral_value(rounding=ROUND_DOWN)
+
             incentives[pool_id_to_receive]["aura_incentives"] += to_receive_aura
             incentives[pool_id_to_receive]["bal_incentives"] += to_receive_bal
             incentives[pool_id_to_receive]["total_incentives"] += to_receive

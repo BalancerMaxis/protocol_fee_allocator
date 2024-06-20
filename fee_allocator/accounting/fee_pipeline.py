@@ -1,7 +1,7 @@
 import datetime
 import os
 
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 from typing import Dict
 from typing import List
 
@@ -44,6 +44,15 @@ def run_fees(
     core_pools = requests.get(CORE_POOLS_URL).json()
     # Fetch fee constants:
     fee_constants = requests.get(FEE_CONSTANTS_URL).json()
+    # transform token amounts into wei
+    for key in [
+        "min_aura_incentive",
+        "min_vote_incentive_amount",
+        "min_aura_incentive",
+    ]:
+        fee_constants[key] = Decimal(fee_constants[key] * 1e6).to_integral_value(
+            rounding=ROUND_DOWN
+        )
     # Fetch re-route config:
     reroute_config = requests.get(REROUTE_CONFIG_URL).json()
     target_blocks = {}
