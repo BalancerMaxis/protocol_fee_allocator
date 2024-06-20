@@ -4,7 +4,6 @@ from decimal import Decimal, ROUND_DOWN
 from typing import Dict
 from typing import List
 from typing import Optional
-from fee_allocator.accounting.distribution import get_last_join_exit
 
 from bal_tools import BalPoolsGauges
 from fee_allocator.accounting.settings import Chains

@@ -16,7 +16,6 @@ from fee_allocator.accounting.collectors import collect_fee_info
 from fee_allocator.accounting.distribution import calc_and_split_incentives
 from fee_allocator.accounting.distribution import re_distribute_incentives
 from fee_allocator.accounting.distribution import re_route_incentives
-from fee_allocator.accounting.distribution import get_last_join_exit
 from fee_allocator.accounting.logger import logger
 from fee_allocator.accounting.settings import BALANCER_GRAPH_URLS
 from fee_allocator.accounting.settings import CORE_POOLS_URL
