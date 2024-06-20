@@ -2,7 +2,7 @@ import datetime
 import os
 import json
 
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 from typing import Dict
 from typing import List
 
@@ -137,7 +137,7 @@ def run_fees(
             collected_fees[chain.value],
             chain.value,
             Decimal(fees_to_distribute[chain.value]),
-            Decimal(fee_constants["min_aura_incentive"]),
+            Decimal(fee_constants["min_aura_incentive"])
             Decimal(fee_constants["dao_share_pct"]),
             Decimal(fee_constants["vebal_share_pct"]),
             Decimal(fee_constants["min_existing_aura_incentive"]),
