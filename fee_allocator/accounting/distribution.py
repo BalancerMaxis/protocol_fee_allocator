@@ -1,4 +1,3 @@
-import math
 import datetime
 from decimal import Decimal, ROUND_DOWN
 from typing import Dict
@@ -43,25 +42,24 @@ def calc_and_split_incentives(
         pool_fees = data["bpt_token_fee_in_usd"] + data["token_fees_in_usd"]
         pool_share = pool_fees / Decimal(total_fees)
         # If aura incentives is less than 500 USDC, we pay all incentives to balancer
-        total_incentive = pool_share * fees_to_distr_wo_dao_vebal
+        total_incentive = (pool_share * fees_to_distr_wo_dao_vebal).to_integral_value(
+            rounding=ROUND_DOWN
+        )
         aura_incentives = (total_incentive * aura_vebal_share).to_integral_value(
             rounding=ROUND_DOWN
         )
 
         # Distribute precisely now, redistribution will happen later.
-        bal_incentives = (
-            (total_incentive - aura_incentives).to_integral_value(rounding=ROUND_DOWN),
+        bal_incentives = (total_incentive - aura_incentives).to_integral_value(
+            rounding=ROUND_DOWN
         )
-        fees_to_dao = (
-            (pool_share * fees_to_distribute * dao_share).to_integral_value(
-                rounding=ROUND_DOWN
-            ),
+
+        fees_to_dao = (pool_share * fees_to_distribute * dao_share).to_integral_value(
+            rounding=ROUND_DOWN
         )
         fees_to_vebal = (
-            (pool_share * fees_to_distribute * vebal_share).to_integral_value(
-                rounding=ROUND_DOWN
-            ),
-        )
+            pool_share * fees_to_distribute * vebal_share
+        ).to_integral_value(rounding=ROUND_DOWN)
         # Split fees between aura and bal fees
         pool_incentives[pool] = {
             "chain": chain,
@@ -113,9 +111,7 @@ def handle_aura_min(incentives: dict, min_aura_incentive: Decimal):
             )
             amount_per_pool = 0
         else:
-            amount_per_pool = (
-                debt_to_aura_market / num_pools_over_min
-            ).to_integral_value(rounding=ROUND_DOWN)
+            amount_per_pool = round(debt_to_aura_market / num_pools_over_min, 2)
         for pool_id in pools_over_aura_min:
             ## TODO: Consider this logic as an additional test/more sensitive handlingthat could allow pool selection based
             #   on total_incentives instead of aura incentives
