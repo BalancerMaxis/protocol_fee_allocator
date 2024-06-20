@@ -111,6 +111,8 @@ def generate_payload(web3: Web3, csv_file: str):
         address=address_book.extras.tokens.USDC,
         abi=get_abi("ERC20"),
     )
+    usdc_decimals = usdc.functions.decimals().call()
+    usdc_mantissa_multilpier = 10 ** int(usdc_decimals)
 
     bribe_vault = address_book.extras.hidden_hand2.bribe_vault
     bribes = process_bribe_csv(csv_file)
@@ -122,22 +124,17 @@ def generate_payload(web3: Web3, csv_file: str):
         total_balancer_usdc += amount
     for target, amount in bribes["aura"].items():
         total_aura_usdc += amount
-    total_usdc = total_balancer_usdc + total_aura_usdc
+    total_brib_usdc = total_balancer_usdc + total_aura_usdc
 
     usdc_approve = copy.deepcopy(APPROVE)
     usdc_approve["to"] = address_book.extras.tokens.USDC
     usdc_approve["contractInputsValues"]["spender"] = bribe_vault
-    usdc_approve["contractInputsValues"]["rawAmount"] = str(total_usdc + 1)
+    usdc_approve["contractInputsValues"]["rawAmount"] = str(total_brib_usdc + 1)
     tx_list.append(usdc_approve)
     # Do Payments
-    payments_usd = 0
-    payments = 0
+    total_payments = 0
     for target, amount in bribes["payment"].items():
         print(f"Paying out {amount} via direct transfer to {target}")
-        print(amount)
-        usdc_amount = amount
-        print(usdc_amount)
-        payments_usd += amount
         transfer = copy.deepcopy(TRANSFER)
         transfer["to"] = address_book.extras.tokens.USDC
         transfer["contractInputsValues"]["value"] = str(int(usdc_amount))
@@ -146,41 +143,41 @@ def generate_payload(web3: Web3, csv_file: str):
         transfer["contractInputsValues"]["to"] = target
         print(transfer["contractInputsValues"]["to"])
         tx_list.append(transfer)
-        payments += usdc_amount
+        total_payments += amount
 
     # Print report
     print(f"******** Summary Report")
     print(f"*** Aura USDC: {total_aura_usdc}")
     print(f"*** Balancer USDC: {total_balancer_usdc}")
-    print(f"*** Payment USDC: {payments_usd}")
-    print(f"*** Total USDC: {total_usdc + payments_usd}")
-
+    print(f"*** Payment USDC: {total_payments}")
+    print(f"*** Total USDC: {total_brib_usdc + total_payments}")
+    print(
+        f"*** Human readable total USDC: {(total_brib_usdc + total_payments)/usdc_mantissa_multiplier}"
+    )
     # BALANCER
-    def bribe_balancer(gauge, mantissa):
+    def bribe_balancer(gauge, bribe_amount):
         prop = Web3.solidity_keccak(["address"], [Web3.to_checksum_address(gauge)])
-        mantissa = int(mantissa)
         prophash = prop.hex()
         prophash = "0x" + prophash if prophash[:2] != "0x" else prophash
         print("******* Posting Balancer Bribe:")
         print("*** Gauge Address:", gauge)
         print("*** Proposal hash:", prophash)
-        print("*** Amount:", amount)
-        print("*** Mantissa Amount:", mantissa)
+        print("*** Amount:", bribe_amount)
+        print("*** Human readable Amount:", bribe_amount / usdc_mantissa_multilpier)
 
         if amount == 0:
             return
         bal_tx = copy.deepcopy(BALANCER_BRIB)
         bal_tx["contractInputsValues"]["_proposal"] = prophash
         bal_tx["contractInputsValues"]["_token"] = address_book.extras.tokens.USDC
-        bal_tx["contractInputsValues"]["_amount"] = str(mantissa)
+        bal_tx["contractInputsValues"]["_amount"] = str(bribe_amount)
 
         tx_list.append(bal_tx)
 
     for target, amount in bribes["balancer"].items():
         if amount == 0:
             continue
-        mantissa = int(amount * usdc_mantissa_multilpier)
-        bribe_balancer(target, mantissa)
+        bribe_balancer(target, amount)
 
     # AURA
     for target, amount in bribes["aura"].items():
@@ -189,20 +186,19 @@ def generate_payload(web3: Web3, csv_file: str):
         target = Web3.to_checksum_address(target)
         # grab data from proposals to find out the proposal index
         prop = get_hh_aura_target(target)
-        mantissa = int(amount * usdc_mantissa_multilpier)
         # NOTE: debugging prints to verify
         print("******* Posting AURA Bribe:")
         print("*** Target Gauge Address:", target)
         print("*** Proposal hash:", prop)
         print("*** Amount:", amount)
-        print("*** Mantissa Amount:", mantissa)
+        print("*** Float Amount:", amount / usdc_mantissa_multilpier)
 
         if amount == 0:
             return
         tx = copy.deepcopy(AURA_BRIB)
         tx["contractInputsValues"]["_proposal"] = prop
         tx["contractInputsValues"]["_token"] = address_book.extras.tokens.USDC
-        tx["contractInputsValues"]["_amount"] = str(mantissa)
+        tx["contractInputsValues"]["_amount"] = str(amount)
         tx_list.append(tx)
 
     bal = web3.eth.contract(
@@ -210,7 +206,7 @@ def generate_payload(web3: Web3, csv_file: str):
         abi=get_abi("ERC20"),
     )
 
-    spent_usdc = payments + total_mantissa
+    spent_usdc = total_payments + total_brib_usdc
     vebal_usdc = (
         int(usdc.functions.balanceOf(safe).call() - spent_usdc) - 1
     )  # Subtract 1 wei to avoid rounding errors
@@ -241,11 +237,13 @@ def generate_payload(web3: Web3, csv_file: str):
     with open(output_file_path, "w") as tx_file:
         json.dump(payload, tx_file, indent=2)
     print(f"balance: {usdc.functions.balanceOf(safe).call()}")
-    print(f"USDC to Bribs: {total_mantissa}")
-    print(f"USDC payments: {payments}")
-    print(f"USDC to veBAL: {vebal_usdc}")
+    print(f"USDC to Bribs: {bribe}({bribe/usdc_mantissa_multilpier})")
+    print(f"USDC payments: {total_payments}({total_payments/usdc_mantissa_multilpier})")
+    print(f"USDC to veBAL: {vebal_usdc}({vebal_usdc/usdc_mantissa_multilpier})")
     print(f"BAL to veBAL: {bal.functions.balanceOf(safe).call()}")
-    print(f"Total USDC to pay: {total_mantissa + payments + vebal_usdc}")
+    print(
+        f"Total USDC to pay: {total_mantissa + total_payments + vebal_usdc}({(total_mantissa + total_payments + vebal_usdc)/usdc_mantissa_multilpier})"
+    )
 
 
 if __name__ == "__main__":
