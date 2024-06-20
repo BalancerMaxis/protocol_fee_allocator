@@ -158,7 +158,7 @@ def run_fees(
             Decimal(fee_constants["min_aura_incentive"]),
             Decimal(fee_constants["min_vote_incentive_amount"]),
         )
-
+    incentives = redistributed_incentives
     # Wrap into dataframe and sort by earned fees and store to csv
     joint_incentives_data = {
         **incentives[Chains.MAINNET.value],
