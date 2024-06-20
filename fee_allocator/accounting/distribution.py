@@ -4,6 +4,7 @@ from decimal import Decimal, ROUND_DOWN
 from typing import Dict
 from typing import List
 from typing import Optional
+from fee_allocator.accounting.distribution import get_last_join_exit
 
 from bal_tools import BalPoolsGauges
 from fee_allocator.accounting.settings import Chains
@@ -66,6 +67,7 @@ def calc_and_split_incentives(
         pool_incentives[pool] = {
             "chain": chain,
             "symbol": data["symbol"],
+            "last_join_exit": get_last_join_exit(pool, Chains(chain)),
             "earned_fees": pool_fees,
             "total_to_distribute": total_incentive + fees_to_dao + fees_to_vebal,
             "fees_to_vebal": fees_to_vebal,
@@ -213,6 +215,26 @@ def re_distribute_incentives(
     # Now redistribute again with no buffer
     print(f"Final pass: Redistributing Aura with no buffer.")
     return handle_aura_min(result, min_aura_incentive)
+
+
+def get_last_join_exit(
+    pool_id: str, chain: Chains, alertTimeStamp: Optional[int] = None
+) -> str:
+    """
+    adds last_join_exit for each pool in the incentives list for reporting.
+    Returns the same thing as inputed with the additional field added for each line
+    """
+    q = BalPoolsGauges(chain.value)
+    results = {}
+    try:
+        timestamp = q.get_last_join_exit(pool_id)
+    except:
+        return "Error fetching"
+    gmt_time = datetime.datetime.utcfromtimestamp(timestamp)
+    human_time = gmt_time.strftime("%Y-%m-%d %H:%M:%S") + "+00:00"
+    if alertTimeStamp and timestamp < alertTimeStamp:
+        human_time = f"!!!{human_time}"
+    return human_time
 
 
 def add_last_join_exit(

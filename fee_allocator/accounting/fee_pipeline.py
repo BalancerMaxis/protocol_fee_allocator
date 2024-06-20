@@ -16,7 +16,7 @@ from fee_allocator.accounting.collectors import collect_fee_info
 from fee_allocator.accounting.distribution import calc_and_split_incentives
 from fee_allocator.accounting.distribution import re_distribute_incentives
 from fee_allocator.accounting.distribution import re_route_incentives
-from fee_allocator.accounting.distribution import add_last_join_exit
+from fee_allocator.accounting.distribution import get_last_join_exit
 from fee_allocator.accounting.logger import logger
 from fee_allocator.accounting.settings import BALANCER_GRAPH_URLS
 from fee_allocator.accounting.settings import CORE_POOLS_URL
@@ -150,8 +150,7 @@ def run_fees(
             Decimal(fee_constants["min_aura_incentive"]),
             Decimal(fee_constants["min_vote_incentive_amount"]),
         )
-        ## Add data about last join/exit
-        incentives[chain.value] = add_last_join_exit(redistributed_incentives, chain)
+
     # Wrap into dataframe and sort by earned fees and store to csv
     joint_incentives_data = {
         **incentives[Chains.MAINNET.value],
@@ -169,10 +168,6 @@ def run_fees(
     incentives_df_sorted = joint_incentives_df.sort_values(
         by=["chain", "earned_fees"], ascending=False
     )
-    # move total_to_distribute in joint_incentives_df into the 6th position after earned_fees
-    cols = incentives_df_sorted.columns.tolist()
-    cols.insert(6, cols.pop(cols.index("total_to_distribute")))
-    incentives_df_sorted = incentives_df_sorted.reindex(columns=cols)
 
     ## Find Numbers which are all stored in Decimals
     # Select 'object' dtype columns
@@ -188,7 +183,8 @@ def run_fees(
     # create a final row that sums all Decimal columns
     incentives_df_sorted.loc["Total"] = incentives_df_sorted[decimal_columns].sum()
 
-    ## We're handling USDC so 1e6
+    # Translate wei amounts into human readable format for the csv.  We're handling USDC so 1e6
+
     for column in decimal_columns:
         incentives_df_sorted[column] = incentives_df_sorted[column].apply(
             lambda x: x / Decimal(1e6)
