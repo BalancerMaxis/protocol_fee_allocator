@@ -53,7 +53,7 @@ query {{
 """
 BAL_GQL_QUERY = """
 query {{
-  tokenGetPriceChartData(address:"{token_addr}", range: NINETY_DAY)   
+  tokenGetPriceChartData(address:"{token_addr}", range: NINETY_DAY)
    {{
     id
     price
