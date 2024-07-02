@@ -9,7 +9,7 @@ from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Union
-from bal_addresses import AddrBook
+from bal_tools import Subgraph
 import requests
 from gql import Client
 from gql import gql
@@ -160,7 +160,7 @@ def get_block_by_ts(timestamp: int, chain: str) -> int:
     if timestamp > int(datetime.now().strftime("%s")):
         timestamp = int(datetime.now().strftime("%s")) - 2000
     transport = RequestsHTTPTransport(
-        url=AddrBook(chain).get_subgraph_url("blocks"),
+        url=Subgraph(chain).get_subgraph_url("blocks"),
         retries=2,
     )
     query = gql(
