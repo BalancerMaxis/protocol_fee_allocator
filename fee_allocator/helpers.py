@@ -45,7 +45,7 @@ BAL_GQL_URL = "https://api-v3.balancer.fi/"
 SUBGRAPH_URLS = requests.get(
     "https://raw.githubusercontent.com/BalancerMaxis/bal_addresses/main/outputs/subgraph_urls.json"
 )
-SUBGRAPH_URLS.throw_for_status()
+SUBGRAPH_URLS.raise_for_status()
 SUBGRAPH_URLS = SUBGRAPH_URLS.json()
 
 
