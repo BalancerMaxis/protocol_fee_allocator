@@ -42,15 +42,12 @@ CHAIN_TO_CHAIN_ID_MAP = {
 }
 BAL_GQL_URL = "https://api-v3.balancer.fi/"
 
-BLOCKS_BY_CHAIN = {
-    "mainnet": "https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks",
-    "arbitrum": "https://api.thegraph.com/subgraphs/name/ianlapham/arbitrum-one-blocks",
-    "polygon": "https://api.thegraph.com/subgraphs/name/ianlapham/polygon-blocks",
-    "base": "https://api.studio.thegraph.com/query/48427/bleu-base-blocks/version/latest",
-    "gnosis": "https://api.thegraph.com/subgraphs/name/rebase-agency/gnosis-chain-blocks",
-    "avalanche": "https://api.thegraph.com/subgraphs/name/iliaazhel/avalanche-blocks",
-    "zkevm": "https://api.studio.thegraph.com/query/48427/bleu-polygon-zkevm-blocks/version/latest",
-}
+SUBGRAPH_URLS = requests.get(
+    "https://raw.githubusercontent.com/BalancerMaxis/bal_addresses/main/outputs/subgraph_urls.json"
+)
+SUBGRAPH_URLS.throw_for_status()
+SUBGRAPH_URLS = SUBGRAPH_URLS.json()
+
 
 BLOCKS_QUERY = """
 query {{
@@ -169,7 +166,7 @@ def get_block_by_ts(timestamp: int, chain: str) -> int:
     if timestamp > int(datetime.now().strftime("%s")):
         timestamp = int(datetime.now().strftime("%s")) - 2000
     transport = RequestsHTTPTransport(
-        url=BLOCKS_BY_CHAIN[chain],
+        url=SUBGRAPH_URLS[chain]["blocks"],
         retries=2,
     )
     query = gql(
