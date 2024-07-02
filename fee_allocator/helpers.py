@@ -9,7 +9,7 @@ from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Union
-
+from bal_addresses import AddrBook
 import requests
 from gql import Client
 from gql import gql
@@ -41,12 +41,6 @@ CHAIN_TO_CHAIN_ID_MAP = {
     "zkevm": "1101",
 }
 BAL_GQL_URL = "https://api-v3.balancer.fi/"
-
-SUBGRAPH_URLS = requests.get(
-    "https://raw.githubusercontent.com/BalancerMaxis/bal_addresses/main/outputs/subgraph_urls.json"
-)
-SUBGRAPH_URLS.raise_for_status()
-SUBGRAPH_URLS = SUBGRAPH_URLS.json()
 
 
 BLOCKS_QUERY = """
@@ -166,7 +160,7 @@ def get_block_by_ts(timestamp: int, chain: str) -> int:
     if timestamp > int(datetime.now().strftime("%s")):
         timestamp = int(datetime.now().strftime("%s")) - 2000
     transport = RequestsHTTPTransport(
-        url=SUBGRAPH_URLS[chain]["blocks"],
+        url=AddrBook(chain).get_subgraph_url("blocks"),
         retries=2,
     )
     query = gql(
