@@ -21,22 +21,22 @@ REROUTE_CONFIG_URL = "https://raw.githubusercontent.com/BalancerMaxis/multisig-o
 # Define constants for Arbitrum:
 BALANCER_GRAPH_URLS = Munch()
 BALANCER_GRAPH_URLS[Chains.ARBITRUM.value] = (
-    "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-arbitrum-v2"
+    "https://api.studio.thegraph.com/query/75376/balancer-arbitrum-v2/version/latest"
 )
 BALANCER_GRAPH_URLS[Chains.MAINNET.value] = (
-    "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2"
+    "https://api.studio.thegraph.com/query/75376/balancer-v2/version/latest"
 )
 BALANCER_GRAPH_URLS[Chains.POLYGON.value] = (
-    "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2"
+    "https://api.studio.thegraph.com/query/75376/balancer-polygon-v2/version/latest"
 )
 BALANCER_GRAPH_URLS[Chains.GNOSIS.value] = (
-    "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-gnosis-chain-v2"
+    "https://api.studio.thegraph.com/query/75376/balancer-gnosis-chain-v2/version/latest"
 )
 BALANCER_GRAPH_URLS[Chains.BASE.value] = (
     "https://api.studio.thegraph.com/query/24660/balancer-base-v2/version/latest"
 )
 BALANCER_GRAPH_URLS[Chains.AVALANCHE.value] = (
-    "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-avalanche-v2"
+    "https://api.studio.thegraph.com/query/75376/balancer-avalanche-v2/version/latest"
 )
 BALANCER_GRAPH_URLS[Chains.ZKEVM.value] = (
     "https://api.studio.thegraph.com/query/24660/balancer-polygon-zk-v2/version/latest"

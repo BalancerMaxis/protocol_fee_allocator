@@ -41,8 +41,6 @@ CHAIN_TO_CHAIN_ID_MAP = {
     "zkevm": "1101",
 }
 BAL_GQL_URL = "https://api-v3.balancer.fi/"
-
-
 BLOCKS_QUERY = """
 query {{
     blocks(where:{{timestamp_gt: {ts_gt}, timestamp_lt: {ts_lt} }}) {{
