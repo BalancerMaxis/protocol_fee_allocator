@@ -43,12 +43,12 @@ CHAIN_TO_CHAIN_ID_MAP = {
 BAL_GQL_URL = "https://api-v3.balancer.fi/"
 
 BLOCKS_BY_CHAIN = {
-    "mainnet": "https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks",
-    "arbitrum": "https://api.thegraph.com/subgraphs/name/ianlapham/arbitrum-one-blocks",
-    "polygon": "https://api.thegraph.com/subgraphs/name/ianlapham/polygon-blocks",
+    "mainnet": "https://api.studio.thegraph.com/query/48427/ethereum-blocks/version/latest",
+    "arbitrum": "https://api.studio.thegraph.com/query/48427/arbitrum-blocks/version/latest",
+    "polygon": "https://api.studio.thegraph.com/query/48427/polygon-blocks/version/latest",
     "base": "https://api.studio.thegraph.com/query/48427/bleu-base-blocks/version/latest",
-    "gnosis": "https://api.thegraph.com/subgraphs/name/rebase-agency/gnosis-chain-blocks",
-    "avalanche": "https://api.thegraph.com/subgraphs/name/iliaazhel/avalanche-blocks",
+    "gnosis": "https://api.studio.thegraph.com/query/48427/gnosis-blocks/version/latest",
+    "avalanche": "https://api.studio.thegraph.com/query/48427/avalanche-blocks/version/latest",
     "zkevm": "https://api.studio.thegraph.com/query/48427/bleu-polygon-zkevm-blocks/version/latest",
 }
 
