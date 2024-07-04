@@ -9,7 +9,7 @@ from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Union
-
+from bal_tools import Subgraph
 import requests
 from gql import Client
 from gql import gql
@@ -41,17 +41,6 @@ CHAIN_TO_CHAIN_ID_MAP = {
     "zkevm": "1101",
 }
 BAL_GQL_URL = "https://api-v3.balancer.fi/"
-
-BLOCKS_BY_CHAIN = {
-    "mainnet": "https://api.studio.thegraph.com/query/48427/ethereum-blocks/version/latest",
-    "arbitrum": "https://api.studio.thegraph.com/query/48427/arbitrum-blocks/version/latest",
-    "polygon": "https://api.studio.thegraph.com/query/48427/polygon-blocks/version/latest",
-    "base": "https://api.studio.thegraph.com/query/48427/bleu-base-blocks/version/latest",
-    "gnosis": "https://api.studio.thegraph.com/query/48427/gnosis-blocks/version/latest",
-    "avalanche": "https://api.studio.thegraph.com/query/48427/avalanche-blocks/version/latest",
-    "zkevm": "https://api.studio.thegraph.com/query/48427/bleu-polygon-zkevm-blocks/version/latest",
-}
-
 BLOCKS_QUERY = """
 query {{
     blocks(where:{{timestamp_gt: {ts_gt}, timestamp_lt: {ts_lt} }}) {{
@@ -62,7 +51,7 @@ query {{
 """
 BAL_GQL_QUERY = """
 query {{
-  tokenGetPriceChartData(address:"{token_addr}", range: NINETY_DAY)   
+  tokenGetPriceChartData(address:"{token_addr}", range: NINETY_DAY)
    {{
     id
     price
@@ -169,7 +158,7 @@ def get_block_by_ts(timestamp: int, chain: str) -> int:
     if timestamp > int(datetime.now().strftime("%s")):
         timestamp = int(datetime.now().strftime("%s")) - 2000
     transport = RequestsHTTPTransport(
-        url=BLOCKS_BY_CHAIN[chain],
+        url=Subgraph(chain).get_subgraph_url("blocks"),
         retries=2,
     )
     query = gql(
