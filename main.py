@@ -158,6 +158,9 @@ def main() -> None:
         ts_in_the_past,
         target_aura_vebal_share,
     )
+    print(
+        f"Generating output csv with the following mapped_pools_info:\n {json.dump(mapped_pools_info, indent=1)}"
+    )
     csvfile = generate_and_save_input_csv(collected_fees, ts_now, mapped_pools_info)
     if output_file_name != "current_fees.csv":
         generate_payload(web3_instances["mainnet"], csvfile)

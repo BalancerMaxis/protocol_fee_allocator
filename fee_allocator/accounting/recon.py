@@ -143,7 +143,7 @@ def recon_and_validate(
 
 def generate_and_save_input_csv(
     fees: dict, period_ends: int, mapped_pools_info: Dict
-) -> None:
+) -> str:
     """
     Function that generates and saves csv in format:
     target_root_gauge,platform,amount_of_incentives
