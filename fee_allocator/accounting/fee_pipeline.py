@@ -1,7 +1,5 @@
 import datetime
 import os
-import json
-
 from decimal import Decimal
 from typing import Dict
 from typing import List
@@ -11,7 +9,7 @@ import requests
 from munch import Munch
 from web3 import Web3
 
-from bal_tools import BalPoolsGauges
+from bal_tools import BalPoolsGauges, Subgraph
 from fee_allocator.accounting import PROJECT_ROOT
 from fee_allocator.accounting.collectors import collect_fee_info
 from fee_allocator.accounting.distribution import calc_and_split_incentives
@@ -19,7 +17,6 @@ from fee_allocator.accounting.distribution import re_distribute_incentives
 from fee_allocator.accounting.distribution import re_route_incentives
 from fee_allocator.accounting.distribution import add_last_join_exit
 from fee_allocator.accounting.logger import logger
-from fee_allocator.accounting.settings import BALANCER_GRAPH_URLS
 from fee_allocator.accounting.settings import CORE_POOLS_URL
 from fee_allocator.accounting.settings import Chains
 from fee_allocator.accounting.settings import FEE_CONSTANTS_URL
@@ -109,12 +106,13 @@ def run_fees(
             f"{target_blocks[chain.value]}"
         )
         # Also, collect all pool snapshots:
+        graph_url = Subgraph(chain.value).get_subgraph_url()
         pool_snapshots[chain.value] = (
             get_balancer_pool_snapshots(
-                target_blocks[chain.value][0], BALANCER_GRAPH_URLS[chain.value]
+                target_blocks[chain.value][0], graph_url
             ),  # now
             get_balancer_pool_snapshots(
-                target_blocks[chain.value][1], BALANCER_GRAPH_URLS[chain.value]
+                target_blocks[chain.value][1], graph_url
             ),  # 2 weeks ago
         )
         logger.info(

@@ -9,8 +9,9 @@ from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Union
-from bal_tools import Subgraph
+
 import requests
+from bal_tools import Subgraph
 from gql import Client
 from gql import gql
 from gql.transport.requests import RequestsHTTPTransport
