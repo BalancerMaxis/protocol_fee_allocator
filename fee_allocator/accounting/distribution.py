@@ -4,9 +4,10 @@ from decimal import Decimal
 from typing import Dict
 from typing import List
 from typing import Optional
+import requests
 
 from bal_tools import BalPoolsGauges
-from fee_allocator.accounting.settings import Chains
+from fee_allocator.accounting.settings import Chains, OVERRIDES_URL
 
 
 # TODO remove existing existing_aura_bribs from function.  Perhaps find another way to count aura votes already placed
@@ -26,6 +27,7 @@ def calc_and_split_incentives(
     """
     Calculate and split incentives between aura and balancer pools
     """
+    overrides = requests.get(OVERRIDES_URL).json()
     pool_incentives = {}
     # Calculate pool share in fees
     fees_to_distr_wo_dao_vebal = (
@@ -44,10 +46,15 @@ def calc_and_split_incentives(
         pool_share = pool_fees / Decimal(total_fees)
         # If aura incentives is less than 500 USDC, we pay all incentives to balancer
         total_incentive = pool_share * fees_to_distr_wo_dao_vebal
-        aura_incentives = round(total_incentive * aura_vebal_share, 4)
+        override_data = overrides.get(pool)
+        if override_data:
+            market = override_data["voting_pool_override"]
+            aura_incentives = round(total_incentive, 4) if market == "aura" else 0
+            bal_incentives = round(total_incentive, 4) if market == "bal" else 0
+        else:
+            aura_incentives = round(total_incentive * aura_vebal_share, 4)
+            bal_incentives = round(total_incentive - aura_incentives, 4)
 
-        # Distribute precisely now, redistribution will happen later.
-        bal_incentives = round(total_incentive - aura_incentives, 4)
         fees_to_dao = round(pool_share * fees_to_distribute * dao_share, 4)
         fees_to_vebal = round(pool_share * fees_to_distribute * vebal_share, 4)
         # Split fees between aura and bal fees
