@@ -27,7 +27,6 @@ def calc_and_split_incentives(
     """
     Calculate and split incentives between aura and balancer pools
     """
-    overrides = requests.get(OVERRIDES_URL).json()
     pool_incentives = {}
     # Calculate pool share in fees
     fees_to_distr_wo_dao_vebal = (
@@ -46,15 +45,9 @@ def calc_and_split_incentives(
         pool_share = pool_fees / Decimal(total_fees)
         # If aura incentives is less than 500 USDC, we pay all incentives to balancer
         total_incentive = pool_share * fees_to_distr_wo_dao_vebal
-        override_data = overrides.get(pool)
-        if override_data:
-            market = override_data["voting_pool_override"]
-            aura_incentives = round(total_incentive, 4) if market == "aura" else 0
-            bal_incentives = round(total_incentive, 4) if market == "bal" else 0
-        else:
-            aura_incentives = round(total_incentive * aura_vebal_share, 4)
-            bal_incentives = round(total_incentive - aura_incentives, 4)
 
+        aura_incentives = round(total_incentive * aura_vebal_share, 4)
+        bal_incentives = round(total_incentive - aura_incentives, 4)
         fees_to_dao = round(pool_share * fees_to_distribute * dao_share, 4)
         fees_to_vebal = round(pool_share * fees_to_distribute * vebal_share, 4)
         # Split fees between aura and bal fees
@@ -80,9 +73,15 @@ def handle_aura_min(incentives: dict, min_aura_incentive: Decimal):
     """
     # First we shift all incentives from pools that are under the min_aura_incentive to the balancer market
     # We keep track of our debt to the Aura market
+    
+    overrides = requests.get(OVERRIDES_URL).json()
     debt_to_aura_market = 0
     for pool_id, _data in incentives.items():
-        if _data["aura_incentives"] < min_aura_incentive:
+        override_data = overrides.get(pool_id, {})
+        override_aura_to_bal = override_data.get("voting_pool_override") == "bal"
+
+        if _data["aura_incentives"] < min_aura_incentive or override_aura_to_bal:
+        # if _data["aura_incentives"] < min_aura_incentive:
             # Calculate incentives to redistribute
             incentives_to_redistribute = _data["aura_incentives"]
             # Set incentives to redistribute to 0
