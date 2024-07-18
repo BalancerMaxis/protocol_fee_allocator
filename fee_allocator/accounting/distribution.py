@@ -73,7 +73,7 @@ def handle_aura_min(incentives: dict, min_aura_incentive: Decimal):
     """
     # First we shift all incentives from pools that are under the min_aura_incentive to the balancer market
     # We keep track of our debt to the Aura market
-    
+
     overrides = requests.get(OVERRIDES_URL).json()
     debt_to_aura_market = 0
     for pool_id, _data in incentives.items():
@@ -81,7 +81,7 @@ def handle_aura_min(incentives: dict, min_aura_incentive: Decimal):
         override_aura_to_bal = override_data.get("voting_pool_override") == "bal"
 
         if _data["aura_incentives"] < min_aura_incentive or override_aura_to_bal:
-        # if _data["aura_incentives"] < min_aura_incentive:
+            # if _data["aura_incentives"] < min_aura_incentive:
             # Calculate incentives to redistribute
             incentives_to_redistribute = _data["aura_incentives"]
             # Set incentives to redistribute to 0
