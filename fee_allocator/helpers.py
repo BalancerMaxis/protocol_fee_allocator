@@ -172,6 +172,11 @@ def get_block_by_ts(timestamp: int, chain: str) -> int:
     result = client.execute(query)
     # Sort result by timestamp desc
     result["blocks"].sort(key=lambda x: x["timestamp"], reverse=True)
+    if len(result["blocks"]) == 0:
+        print(
+            f"Warning:  Can't find any blocks around timestamp {timestamp}, trying 5 minutes sooner."
+        )
+        return get_block_by_ts(timestamp - 15 * 60, chain)
     return int(result["blocks"][0]["number"])
 
 
