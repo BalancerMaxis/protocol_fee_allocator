@@ -23,14 +23,7 @@ jobs:
 
     - name: Collect fees
       env:
-        ETHNODEURL: ${{ secrets.ETHNODEURL }}
-        ARBNODEURL: ${{ secrets.ARBNODEURL }}
-        POLYNODEURL: ${{ secrets.POLYNODEURL }}
-        BASENODEURL: ${{ secrets.BASENODEURL }}
-        GNOSISNODEURL: ${{ secrets.GNOSISNODEURL }}
-        GNOSIS_API_KEY: ${{ secrets.GNOSIS_API_KEY }}
-        AVALANCHENODEURL: ${{ secrets.AVALANCHENODEURL }}
-        POLYZKEVMNODEURL: ${{ secrets.POLYZKEVMNODEURL }}
+        DRPC_KEY: ${{ secrets.DRPC_KEY }}
       run: |
         pwd
         end_day=${{ github.event.inputs.end_day }}
