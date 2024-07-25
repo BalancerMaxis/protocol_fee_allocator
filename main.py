@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from munch import Munch
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
+from bal_addresses import AddrBook
 
 from fee_allocator.accounting.fee_pipeline import run_fees
 from fee_allocator.accounting.recon import generate_and_save_input_csv
@@ -17,6 +18,45 @@ from fee_allocator.helpers import fetch_all_pools_info
 from fee_allocator.tx_builder.tx_builder import generate_payload
 from fee_allocator.helpers import get_block_by_ts
 from fee_allocator.helpers import calculate_aura_vebal_share
+
+
+DRPC_KEY = os.getenv("DRPC_KEY")
+
+
+DRPC_NAME_OVERRIDES = {
+    "mainnet": "ethereum",
+    "zkevm": "polygon-zkevm",
+}
+
+## TODO: USe from bal_tools once released
+class W3_RPC:
+    def __init__(self, chain, DRPC_KEY):
+        drpc_chain = DRPC_NAME_OVERRIDES.get(chain, chain)
+        self.w3 = Web3(
+            Web3.HTTPProvider(
+                f"https://lb.drpc.org/ogrpc?network={drpc_chain}&dkey={DRPC_KEY}"
+            )
+        )
+
+    def __getattr__(self, name):
+        return getattr(self.w3, name)
+
+
+class W3_RPC_BY_CHAIN:
+    def __init__(self, DRPC_KEY):
+        self.DRPC_KEY = DRPC_KEY
+        self.w3_by_chain = {}
+        for chain in AddrBook.chain_ids_by_name.keys():
+            self.w3_by_chain[chain] = W3_RPC(chain, DRPC_KEY)
+
+    def __getitem__(self, chain):
+        return self.w3_by_chain[chain]
+
+    def __setitem__(self, chain, value):
+        self.w3_by_chain[chain] = value
+
+    def __delitem__(self, chain):
+        del self.w3_by_chain[chain]
 
 
 def get_last_thursday_odd_week():
@@ -100,45 +140,8 @@ def main() -> None:
         mapped_pools_info[pool["id"]] = Web3.to_checksum_address(
             pool["gauge"]["address"]
         )
-    web3_instances = Munch()
-    web3_instances[Chains.MAINNET.value] = Web3(
-        Web3.HTTPProvider(os.environ["ETHNODEURL"])
-    )
-    poly_web3 = Web3(Web3.HTTPProvider(os.environ["POLYNODEURL"]))
-    poly_web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-    web3_instances[Chains.POLYGON.value] = poly_web3
-    web3_instances[Chains.ARBITRUM.value] = Web3(
-        Web3.HTTPProvider(os.environ["ARBNODEURL"])
-    )
+    web3_instances = Munch(W3_RPC_BY_CHAIN(DRPC_KEY).w3_by_chain)
 
-    try:
-        web3_instances[Chains.GNOSIS.value] = Web3(
-            Web3.HTTPProvider(
-                os.environ["GNOSISNODEURL"],
-                request_kwargs={
-                    "headers": {
-                        "Authorization": f"Bearer {os.environ['GNOSIS_API_KEY']}"
-                    }
-                },
-            )
-        )
-    except KeyError:
-        print("NO gnosis key found using default that may be broken")
-        web3_instances[Chains.GNOSIS.value] = Web3.HTTPProvider(
-            "https://gnosis.publicnode.com"
-        )
-
-    web3_instances[Chains.BASE.value] = Web3(
-        Web3.HTTPProvider(os.environ.get("BASENODEURL", "https://base.llamarpc.com"))
-    )
-    web3_instances[Chains.AVALANCHE.value] = Web3(
-        Web3.HTTPProvider(
-            os.environ.get("AVALANCHENODEURL", "https://rpc.ankr.com/avalanche")
-        )
-    )
-    web3_instances[Chains.ZKEVM.value] = Web3(
-        Web3.HTTPProvider(os.environ.get("POLYZKEVMNODEURL", "https://zkevm-rpc.com"))
-    )
     collected_fees = run_fees(
         web3_instances,
         ts_now,
