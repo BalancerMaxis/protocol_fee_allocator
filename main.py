@@ -7,7 +7,7 @@ import pytz
 from dotenv import load_dotenv
 from munch import Munch
 from web3 import Web3
-from web3.middleware import geth_poa_middleware
+from bal_tools import Web3RpcByChain
 from bal_addresses import AddrBook
 
 from fee_allocator.accounting.fee_pipeline import run_fees
@@ -27,37 +27,6 @@ DRPC_NAME_OVERRIDES = {
     "mainnet": "ethereum",
     "zkevm": "polygon-zkevm",
 }
-
-
-## TODO: USe from bal_tools once released
-class W3_RPC:
-    def __init__(self, chain, DRPC_KEY):
-        drpc_chain = DRPC_NAME_OVERRIDES.get(chain, chain)
-        self.w3 = Web3(
-            Web3.HTTPProvider(
-                f"https://lb.drpc.org/ogrpc?network={drpc_chain}&dkey={DRPC_KEY}"
-            )
-        )
-
-    def __getattr__(self, name):
-        return getattr(self.w3, name)
-
-
-class W3_RPC_BY_CHAIN:
-    def __init__(self, DRPC_KEY):
-        self.DRPC_KEY = DRPC_KEY
-        self.w3_by_chain = {}
-        for chain in AddrBook.chain_ids_by_name.keys():
-            self.w3_by_chain[chain] = W3_RPC(chain, DRPC_KEY)
-
-    def __getitem__(self, chain):
-        return self.w3_by_chain[chain]
-
-    def __setitem__(self, chain, value):
-        self.w3_by_chain[chain] = value
-
-    def __delitem__(self, chain):
-        del self.w3_by_chain[chain]
 
 
 def get_last_thursday_odd_week():
@@ -94,7 +63,7 @@ def get_last_thursday_odd_week():
 
 
 now = datetime.utcnow()
-DELTA = 1000
+DELTA = 7200  # delay to deal with slow subgraphs
 # TS_NOW = 1704326400
 # TS_2_WEEKS_AGO = 1703116800
 TS_NOW = int(now.timestamp()) - DELTA
@@ -141,7 +110,7 @@ def main() -> None:
         mapped_pools_info[pool["id"]] = Web3.to_checksum_address(
             pool["gauge"]["address"]
         )
-    web3_instances = Munch(W3_RPC_BY_CHAIN(DRPC_KEY).w3_by_chain)
+    web3_instances = Munch(Web3RpcByChain(DRPC_KEY).w3_by_chain)
 
     collected_fees = run_fees(
         web3_instances,
