@@ -93,8 +93,10 @@ def main() -> None:
 
     with open(fees_path) as f:
         fees_to_distribute = json.load(f)
-    if type(fees_to_distribute['mainnet']) == int:
-        fees_to_distribute = {k: float(Decimal(v) / Decimal(1e6)) for k, v in fees_to_distribute.items()}
+    if type(fees_to_distribute["mainnet"]) == int:
+        fees_to_distribute = {
+            k: float(Decimal(v) / Decimal(1e6)) for k, v in fees_to_distribute.items()
+        }
     pools_info = fetch_all_pools_info()
     # Then map pool_id to root gauge address
     mapped_pools_info = {}
