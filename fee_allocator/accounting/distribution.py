@@ -74,7 +74,6 @@ def filter_dusty_bal_incentives(
     """
     for pool_id, _data in incentives.items():
         if _data["bal_incentives"] < min_incentive_amount:
-            incentives.pop(pool_id)
             incentives[pool_id]["aura_incentives"] += _data["bal_incentives"]
             incentives[pool_id]["bal_incentives"] = 0
     return incentives
