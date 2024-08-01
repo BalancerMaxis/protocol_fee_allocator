@@ -66,6 +66,20 @@ def calc_and_split_incentives(
     return pool_incentives
 
 
+def filter_dusty_bal_incentives(
+    incentives: Dict[str, Dict], min_incentive_amount: Decimal
+):
+    """
+    Move remaining BAL incentives to Aura under a min amount
+    """
+    for pool_id, _data in incentives.items():
+        if _data["bal_incentives"] < min_incentive_amount:
+            incentives.pop(pool_id)
+            incentives[pool_id]["aura_incentives"] += _data["bal_incentives"]
+            incentives[pool_id]["bal_incentives"] = 0
+    return incentives
+
+
 def handle_aura_min(incentives: dict, min_aura_incentive: Decimal):
     """
     Redistribute all incentives away from pools that are < min_aura_incentive amount.

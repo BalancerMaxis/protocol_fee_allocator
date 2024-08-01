@@ -16,6 +16,8 @@ from fee_allocator.accounting.distribution import calc_and_split_incentives
 from fee_allocator.accounting.distribution import re_distribute_incentives
 from fee_allocator.accounting.distribution import re_route_incentives
 from fee_allocator.accounting.distribution import add_last_join_exit
+from fee_allocator.accounting.distribution import filter_dusty_bal_incentives
+
 from fee_allocator.accounting.logger import logger
 from fee_allocator.accounting.settings import CORE_POOLS_URL
 from fee_allocator.accounting.settings import Chains
@@ -150,8 +152,10 @@ def run_fees(
             Decimal(fee_constants["min_aura_incentive"]),
             Decimal(fee_constants["min_vote_incentive_amount"]),
         )
+        # Filter BAL incentives under 75 bucks to Aura
+        filtered_incentives = filter_dusty_bal_incentives(redistributed_incentives, 75)
         ## Add data about last join/exit
-        incentives[chain.value] = add_last_join_exit(redistributed_incentives, chain)
+        incentives[chain.value] = add_last_join_exit(filtered_incentives, chain)
     # Wrap into dataframe and sort by earned fees and store to csv
     joint_incentives_data = {
         **incentives[Chains.MAINNET.value],
