@@ -149,6 +149,7 @@ def run_fees(
             re_routed_incentives,
             Decimal(fee_constants["min_aura_incentive"]),
             Decimal(fee_constants["min_vote_incentive_amount"]),
+            first_pass_buffer=0.35,
         )
         ## Add data about last join/exit
         incentives[chain.value] = add_last_join_exit(redistributed_incentives, chain)
