@@ -54,7 +54,7 @@ def run_fees(
     # Estimate mainnet current block to calculate aura veBAL share
     _target_mainnet_block = get_block_by_ts(timestamp_now, Chains.MAINNET.value)
     aura_vebal_share = calculate_aura_vebal_share(
-        web3_instances.mainnet, _target_mainnet_block
+        web3_instances["mainnet"], _target_mainnet_block
     )
     logger.info(
         f"veBAL aura share at block {_target_mainnet_block}: {aura_vebal_share}"
@@ -62,6 +62,7 @@ def run_fees(
     existing_aura_bribs: List[Dict] = fetch_hh_aura_bribs()
     # Collect all BPT prices:
     for chain in Chains:
+        print(f"Collecting BPT prices for Chain {chain.value}")
         poolutil = BalPoolsGauges(chain.value)
         listed_core_pools = core_pools.get(chain.value, None)
         pools = {}
