@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 from datetime import datetime, timedelta
+from decimal import Decimal
 import pytz
 
 from dotenv import load_dotenv
@@ -92,8 +93,8 @@ def main() -> None:
 
     with open(fees_path) as f:
         fees_to_distribute = json.load(f)
-    if "-wei.json" in fees_file_name:
-        fees_to_distribute = {k: float(v / 1e6) for k, v in fees_to_distribute.items()}
+    if type(fees_to_distribute['mainnet']) == int:
+        fees_to_distribute = {k: float(Decimal(v) / Decimal(1e6)) for k, v in fees_to_distribute.items()}
     pools_info = fetch_all_pools_info()
     # Then map pool_id to root gauge address
     mapped_pools_info = {}
