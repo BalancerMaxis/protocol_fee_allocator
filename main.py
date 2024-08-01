@@ -5,10 +5,8 @@ from datetime import datetime, timedelta
 import pytz
 
 from dotenv import load_dotenv
-from munch import Munch
 from web3 import Web3
 from bal_tools import Web3RpcByChain
-from bal_addresses import AddrBook
 
 from fee_allocator.accounting.fee_pipeline import run_fees
 from fee_allocator.accounting.recon import generate_and_save_input_csv
@@ -21,12 +19,6 @@ from fee_allocator.helpers import calculate_aura_vebal_share
 
 
 DRPC_KEY = os.getenv("DRPC_KEY")
-
-
-DRPC_NAME_OVERRIDES = {
-    "mainnet": "ethereum",
-    "zkevm": "polygon-zkevm",
-}
 
 
 def get_last_thursday_odd_week():
@@ -100,7 +92,7 @@ def main() -> None:
 
     with open(fees_path) as f:
         fees_to_distribute = json.load(f)
-    if fees_file_name.contains("-wei.json"):
+    if "-wei.json" in fees_file_name:
         fees_to_distribute = {k: float(v / 1e6) for k, v in fees_to_distribute.items()}
     pools_info = fetch_all_pools_info()
     # Then map pool_id to root gauge address
@@ -114,7 +106,7 @@ def main() -> None:
         mapped_pools_info[pool["id"]] = Web3.to_checksum_address(
             pool["gauge"]["address"]
         )
-    web3_instances = Munch(Web3RpcByChain(DRPC_KEY).w3_by_chain)
+    web3_instances = Web3RpcByChain(DRPC_KEY)
 
     collected_fees = run_fees(
         web3_instances,
@@ -126,7 +118,7 @@ def main() -> None:
     )
     _target_mainnet_block = get_block_by_ts(ts_now, Chains.MAINNET.value)
     target_aura_vebal_share = calculate_aura_vebal_share(
-        web3_instances.mainnet, _target_mainnet_block
+        web3_instances["mainnet"], _target_mainnet_block
     )
     recon_and_validate(
         collected_fees,
