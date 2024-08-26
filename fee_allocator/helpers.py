@@ -52,11 +52,12 @@ query {{
 """
 BAL_GQL_QUERY = """
 query {{
-  tokenGetPriceChartData(address:"{token_addr}", range: NINETY_DAY)
+  tokenGetHistoricalPrices(addresses:["{token_addr}"], range: NINETY_DAY, chain: {upper_chain_name})
    {{
-    id
-    price
-    timestamp
+    prices {{
+        price
+        timestamp
+    }}
   }}
 }}
 """
@@ -271,41 +272,6 @@ def _get_balancer_pool_tokens_balances(
     return token_balances
 
 
-def fetch_token_price_balgql(
-    token_addr: str,
-    chain: str,
-    start_date: Optional[datetime] = datetime.now(),
-    twap_days: Optional[int] = 14,
-) -> Optional[Decimal]:
-    """
-    Fetches 30 days of token prices from balancer graphql api and calculate twap over 14 days
-    """
-    start_date_ts = int(start_date.strftime("%s"))
-    end_date_ts = int((start_date - timedelta(days=twap_days)).strftime("%s"))
-    print(f"chain id: {CHAIN_TO_CHAIN_ID_MAP[chain]}")
-    transport = RequestsHTTPTransport(
-        url=BAL_GQL_URL, retries=2, headers={"chainId": CHAIN_TO_CHAIN_ID_MAP[chain]}
-    )
-    client = Client(transport=transport, fetch_schema_from_transport=True)
-    query = gql(BAL_GQL_QUERY.format(token_addr=token_addr.lower()))
-    result = client.execute(query)
-    # Sort result by timestamp desc
-    result["tokenGetPriceChartData"].sort(key=lambda x: x["timestamp"], reverse=True)
-    # Filter results so they are in between start_date and end_date timestamps
-    result_slice = [
-        item
-        for item in result["tokenGetPriceChartData"]
-        if start_date_ts >= item["timestamp"] >= end_date_ts
-    ]
-    if len(result_slice) == 0:
-        return None
-    # Sum all prices and divide by number of days
-    twap_price = Decimal(
-        sum([Decimal(item["price"]) for item in result_slice]) / len(result_slice)
-    )
-    return twap_price
-
-
 def fetch_token_price_balgql_timerange(
     token_addr: str,
     chain: str,
@@ -321,22 +287,22 @@ def fetch_token_price_balgql_timerange(
         headers={"chainId": CHAIN_TO_CHAIN_ID_MAP[chain]},
     )
     client = Client(transport=transport, fetch_schema_from_transport=True)
-    query = gql(BAL_GQL_QUERY.format(token_addr=token_addr.lower()))
+    query = gql(
+        BAL_GQL_QUERY.format(
+            token_addr=token_addr.lower(), upper_chain_name=chain.upper()
+        )
+    )
     result = client.execute(query)
+    prices = result["tokenGetHistoricalPrices"][0]["prices"]
+    # Filter results so they are in between start_date and end_date timestamps
     # Sort result by timestamp desc
-    result["tokenGetPriceChartData"].sort(key=lambda x: x["timestamp"], reverse=True)
+    time_sorted_prices = sorted(prices, key=lambda x: int(x["timestamp"]), reverse=True)
     # Filter results so they are in between start_date and end_date timestamps
     result_slice = [
         item
-        for item in result["tokenGetPriceChartData"]
-        if end_date_ts >= item["timestamp"] >= start_date_ts
+        for item in time_sorted_prices
+        if end_date_ts >= int(item["timestamp"]) >= start_date_ts
     ]
-    if token_addr.lower() == "0x6dbf2155b0636cb3fd5359fccefb8a2c02b6cb51":
-        return Decimal(0.39)
-    if token_addr.lower() == "0x93ef1ea305d11a9b2a3ebb9bb4fcc34695292e7d":
-        return Decimal(2300)
-    if token_addr.lower() == "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee":
-        return Decimal(2300)
     if len(result_slice) == 0:
         return None
     # Sum all prices and divide by number of days
