@@ -1,0 +1,62 @@
+name: Process and run reports for a fee round (v1 and v2)
+
+on:
+  workflow_dispatch:
+    inputs:
+      end_day:
+        description: "End Date of the last voting period like YYYY-MM-DD. Fees will be calculated for the 2 week period prior 00:00GMT on this day. It should be on a Thursday during an Aura voting round."
+        required: true
+
+jobs:
+  generate_fees_report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout v1 with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Setup Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Calculate date range
+        id: date_calc
+        run: |
+          end_day=${{ github.event.inputs.end_day }}
+          start_day=$(date -d "$end_day -14 days" +%Y-%m-%d)
+          date_range_string="${start_day}_${end_day}"
+          start_timestamp=$(date -d "$start_day 00:00:00" +"%s")
+          end_timestamp=$((start_timestamp + 60*60*24*14)) # 2 weeks later
+          echo "date_range_string=${date_range_string}" >> $GITHUB_OUTPUT
+          echo "start_timestamp=${start_timestamp}" >> $GITHUB_OUTPUT
+          echo "end_timestamp=${end_timestamp}" >> $GITHUB_OUTPUT
+
+      - name: Run v1 allocator
+        env:
+          DRPC_KEY: ${{ secrets.DRPC_KEY }}
+        run: |
+          pip3 install -r requirements.txt
+          python3 main.py --ts_now ${{ steps.date_calc.outputs.end_timestamp }} --ts_in_the_past ${{ steps.date_calc.outputs.start_timestamp }} --fees_file_name fees_v1_${{ steps.date_calc.outputs.date_range_string }}.json --output_file_name incentives_v1_${{ steps.date_calc.outputs.date_range_string }}.csv
+
+      - name: Run v2 allocator
+        env:
+          DRPC_KEY: ${{ secrets.DRPC_KEY }}
+        run: |
+          cd v2
+          pip3 install -r requirements.txt
+          python3 main.py --ts_now ${{ steps.date_calc.outputs.end_timestamp }} --ts_in_the_past ${{ steps.date_calc.outputs.start_timestamp }} --fees_file_name fees_v2_${{ steps.date_calc.outputs.date_range_string }}.json --output_file_name incentives_v2_${{ steps.date_calc.outputs.date_range_string }}.csv
+          cd ..
+
+      - name: Create PR
+        id: cpr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "task: new fees report (v1 and v2) ending ${{ github.event.inputs.end_day }}"
+          title: "Biweekly Fee Report (v1 and v2) ending ${{ github.event.inputs.end_day }}"
+          branch: gha-biweekly-fees
+          branch-suffix: timestamp
+          delete-branch: true
+          labels: "Biweekly-Report"
