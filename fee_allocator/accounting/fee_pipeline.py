@@ -146,7 +146,7 @@ def run_fees(
             for pool_id, fee_info in collected_fees[chain.value].items()
             if fee_info["symbol"].endswith("-fee-split")
         }
-        total_fees_to_gyro += (
+        total_fees_to_gyro += Decimal(
             sum(
                 fee_info["bpt_token_fee_in_usd"] + fee_info["token_fees_in_usd"]
                 for fee_info in collected_fees_eclp[chain.value].values()
