@@ -26,6 +26,7 @@ from fee_allocator.helpers import fetch_hh_aura_bribs
 from fee_allocator.helpers import get_balancer_pool_snapshots
 from fee_allocator.helpers import get_block_by_ts
 from fee_allocator.helpers import get_twap_bpt_price
+from fee_allocator.helpers import get_eclp_fee_split_pools
 
 
 def run_fees(
@@ -35,7 +36,7 @@ def run_fees(
     output_file_name: str,
     fees_to_distribute: dict,
     mapped_pools_info: dict,
-) -> dict:
+) -> tuple[dict, Decimal]:
     """
     This function is used to run the fee allocation process
     """
@@ -48,8 +49,10 @@ def run_fees(
     target_blocks = {}
     pool_snapshots = {}
     collected_fees = {}
+    collected_fees_eclp = {chain.value: {} for chain in Chains}
     incentives = {}
     bpt_twap_prices = {chain.value: {} for chain in Chains}
+    total_fees_to_gyro = Decimal(0)
 
     # Estimate mainnet current block to calculate aura veBAL share
     _target_mainnet_block = get_block_by_ts(timestamp_now, Chains.MAINNET.value)
@@ -60,11 +63,15 @@ def run_fees(
         f"veBAL aura share at block {_target_mainnet_block}: {aura_vebal_share}"
     )
     existing_aura_bribs: List[Dict] = fetch_hh_aura_bribs()
+    eclp_pools = get_eclp_fee_split_pools()
     # Collect all BPT prices:
     for chain in Chains:
         print(f"Collecting BPT prices for Chain {chain.value}")
         poolutil = BalPoolsGauges(chain.value)
-        listed_core_pools = core_pools.get(chain.value, None)
+        listed_eclp_pools = {id: symbol for id, symbol in eclp_pools.get(chain.value, {}).items() if not poolutil.is_core_pool(id)}
+        # combine eclp fee split pools with core pools, we can differentiate them after fee calcs based on the `-fee-split` symbol suffix
+        listed_core_pools = {**listed_eclp_pools, **core_pools.get(chain.value, None)}
+        
         pools = {}
         if listed_core_pools is None:
             continue
@@ -121,7 +128,7 @@ def run_fees(
             f"{target_blocks[chain.value]}"
         )
         collected_fees[chain.value] = collect_fee_info(
-            core_pools[chain.value],
+            pools,
             chain,
             pool_snapshots[chain.value][0],
             pool_snapshots[chain.value][1],
@@ -129,6 +136,19 @@ def run_fees(
             end_ts=timestamp_now,
             bpt_twap_prices=bpt_twap_prices,
         )
+
+        collected_fees_eclp[chain.value] = {
+            pool_id: fee_info
+            for pool_id, fee_info in collected_fees[chain.value].items()
+            if fee_info["symbol"].endswith("-fee-split")
+        }
+        total_fees_to_gyro += sum(fee_info["bpt_token_fee_in_usd"] + fee_info["token_fees_in_usd"] for fee_info in collected_fees_eclp[chain.value].values()) / 2
+
+        collected_fees[chain.value] = {
+            pool_id: fee_info
+            for pool_id, fee_info in collected_fees[chain.value].items()
+            if not fee_info["symbol"].endswith("-fee-split")
+        }
 
         # Now we have all the data we need to run the fee allocation process
         logger.info(f"Running fee allocation for {chain.value}")
@@ -171,4 +191,4 @@ def run_fees(
         PROJECT_ROOT, f"fee_allocator/allocations/{output_file_name}"
     )
     incentives_df_sorted.to_csv(allocations_file_name)
-    return joint_incentives_data
+    return joint_incentives_data, total_fees_to_gyro

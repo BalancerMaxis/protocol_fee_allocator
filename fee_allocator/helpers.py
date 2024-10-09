@@ -12,6 +12,7 @@ from typing import Union
 
 import requests
 from bal_tools import Subgraph
+from fee_allocator.accounting.settings import Chains
 from gql import Client
 from gql import gql
 from gql.transport.requests import RequestsHTTPTransport
@@ -293,7 +294,11 @@ def fetch_token_price_balgql_timerange(
         )
     )
     result = client.execute(query)
-    prices = result["tokenGetHistoricalPrices"][0]["prices"]
+    try:
+        prices = result["tokenGetHistoricalPrices"][0]["prices"]
+    except IndexError:
+        print(f"No prices found for token {token_addr} on chain {chain}")
+        return None
     # Filter results so they are in between start_date and end_date timestamps
     # Sort result by timestamp desc
     time_sorted_prices = sorted(prices, key=lambda x: int(x["timestamp"]), reverse=True)
@@ -376,3 +381,11 @@ def fetch_hh_aura_bribs() -> List[Dict]:
     if response_parsed["error"]:
         raise ValueError("HH API returned error")
     return response_parsed["data"]
+
+def get_eclp_fee_split_pools() -> Dict:
+    eclp_pools = {chain.value: {} for chain in Chains}
+    for pool in fetch_all_pools_info():
+        pool_id, symbol, chain = pool["id"], pool["symbol"], pool["chain"].lower()
+        if "ECLP" in symbol and chain in eclp_pools.keys():
+            eclp_pools[chain][pool_id] = f"{symbol}-fee-split"
+    return eclp_pools

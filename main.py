@@ -111,7 +111,7 @@ def main() -> None:
         )
     web3_instances = Web3RpcByChain(DRPC_KEY)
 
-    collected_fees = run_fees(
+    collected_fees, fees_to_gyro = run_fees(
         web3_instances,
         ts_now,
         ts_in_the_past,
@@ -130,9 +130,9 @@ def main() -> None:
         ts_in_the_past,
         target_aura_vebal_share,
     )
-    csvfile = generate_and_save_input_csv(collected_fees, ts_now, mapped_pools_info)
-    if output_file_name != "current_fees.csv":
-        generate_payload(web3_instances["mainnet"], csvfile)
+    csvfile = generate_and_save_input_csv(collected_fees, ts_now, mapped_pools_info, fees_to_gyro)
+    # if output_file_name != "current_fees.csv":
+    generate_payload(web3_instances["mainnet"], csvfile)
 
 
 if __name__ == "__main__":
