@@ -133,8 +133,8 @@ def main() -> None:
     csvfile = generate_and_save_input_csv(
         collected_fees, ts_now, mapped_pools_info, fees_to_gyro
     )
-    # if output_file_name != "current_fees.csv":
-    generate_payload(web3_instances["mainnet"], csvfile)
+    if output_file_name != "current_fees.csv":
+        generate_payload(web3_instances["mainnet"], csvfile)
 
 
 if __name__ == "__main__":
