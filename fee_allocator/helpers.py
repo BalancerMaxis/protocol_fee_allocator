@@ -382,6 +382,7 @@ def fetch_hh_aura_bribs() -> List[Dict]:
         raise ValueError("HH API returned error")
     return response_parsed["data"]
 
+
 def get_eclp_fee_split_pools() -> Dict:
     eclp_pools = {chain.value: {} for chain in Chains}
     for pool in fetch_all_pools_info():

@@ -68,10 +68,14 @@ def run_fees(
     for chain in Chains:
         print(f"Collecting BPT prices for Chain {chain.value}")
         poolutil = BalPoolsGauges(chain.value)
-        listed_eclp_pools = {id: symbol for id, symbol in eclp_pools.get(chain.value, {}).items() if not poolutil.is_core_pool(id)}
+        listed_eclp_pools = {
+            id: symbol
+            for id, symbol in eclp_pools.get(chain.value, {}).items()
+            if not poolutil.is_core_pool(id)
+        }
         # combine eclp fee split pools with core pools, we can differentiate them after fee calcs based on the `-fee-split` symbol suffix
         listed_core_pools = {**listed_eclp_pools, **core_pools.get(chain.value, None)}
-        
+
         pools = {}
         if listed_core_pools is None:
             continue
@@ -142,7 +146,13 @@ def run_fees(
             for pool_id, fee_info in collected_fees[chain.value].items()
             if fee_info["symbol"].endswith("-fee-split")
         }
-        total_fees_to_gyro += sum(fee_info["bpt_token_fee_in_usd"] + fee_info["token_fees_in_usd"] for fee_info in collected_fees_eclp[chain.value].values()) / 2
+        total_fees_to_gyro += (
+            sum(
+                fee_info["bpt_token_fee_in_usd"] + fee_info["token_fees_in_usd"]
+                for fee_info in collected_fees_eclp[chain.value].values()
+            )
+            / 2
+        )
 
         collected_fees[chain.value] = {
             pool_id: fee_info
