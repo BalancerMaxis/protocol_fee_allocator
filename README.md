@@ -32,11 +32,12 @@ This action takes about 5-10 minutes to run.  If successful it should generate a
 - Check an older copy of the sheet and grab copypasta/sense check the totals lines.
   - Check that the total out (sum e-g) is equal to the total amount on the sheet and in the safe and matches swept on N9
   - Check that the aura/bal brib ratio under the total in Column I is reasonably close to Aura's share of auraBAL (can get it at https://aura.finance)
-- Copy the table in Column L1 - P9 from another tab into the same place on your sheet.
-   - Update N2-9 with the values from the fee json you generated above
+- Move last_join_exit to Column D, after symbol
+- Create a new row between **earned_fees** and **fees_to_vebal** (column F).  Populate it with the sum of G,H and I for each row.
+- Copy the table in Column N1 - S9 from another tab on a recent date into the same place on your sheet.
+   - Update S2-9 with the wei amount values from the fee json you generated above.  You can also use P if you have float amounts.
 - Check that all chains have a difference of >=1 (or just a tad under)
 - If you want to be fancy apply the conditional formatting to make stuff green and red
-- Make sure that the gud pools are getting lots of bribs (it's a maxi thing)
 
 ## Load the payload
 Assuming the results check out, load the payload into the  [mainnnet fee sweeper multisig](https://app.safe.global/balances?safe=eth:0x7c68c42De679ffB0f16216154C996C354cF1161B).  Run tenderly and make sure it sims, and that the total USDC out matches everything else.  Do a quick check, we can review more later, and sign it/load it.
