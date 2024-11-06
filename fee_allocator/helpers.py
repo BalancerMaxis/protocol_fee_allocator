@@ -10,6 +10,7 @@ from typing import List
 from typing import Optional
 from typing import Union
 
+from munch import Munch
 import requests
 from bal_tools import Subgraph
 from fee_allocator.accounting.settings import Chains
@@ -142,6 +143,16 @@ BALANCER_CONTRACTS = {
     "zkevm": {
         "BALANCER_VAULT_ADDRESS": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
     },
+}
+
+GYRO_FACTORIES = {
+    "mainnet": "0x412a5B2e7a678471985542757A6855847D4931D5",
+    "arbitrum": "0xdCA5f1F0d7994A32BC511e7dbA0259946653Eaf6",
+    "polygon": "0x1a79A24Db0F73e9087205287761fC9C5C305926b",
+    "base": "0x15e86Be6084C6A5a8c17732D398dFbC2Ec574CEC",
+    "gnosis": "0x5d3Be8aaE57bf0D1986Ff7766cC9607B6cC99b89",
+    "avalanche": "0x41E9ac0bfed353c2dE21a980dA0EbB8A464D946A",
+    "zkevm": "0x5D56EA1B2595d2dbe4f5014b967c78ce75324f0c",
 }
 
 HH_AURA_URL = "https://api.hiddenhand.finance/proposal/aura"
@@ -383,10 +394,16 @@ def fetch_hh_aura_bribs() -> List[Dict]:
     return response_parsed["data"]
 
 
-def get_eclp_fee_split_pools() -> Dict:
+def get_eclp_fee_split_pools(web3_instances: Munch[str, Web3]) -> Dict:
     eclp_pools = {chain.value: {} for chain in Chains}
     for pool in fetch_all_pools_info():
-        pool_id, symbol, chain = pool["id"], pool["symbol"], pool["chain"].lower()
-        if "ECLP" in symbol and chain in eclp_pools.keys():
-            eclp_pools[chain][pool_id] = f"{symbol}-fee-split"
+        pool_id, address, symbol, chain = pool["id"], Web3.to_checksum_address(pool["address"]), pool["symbol"], pool["chain"].lower()
+        if chain in eclp_pools.keys():
+            factory = web3_instances[chain].eth.contract(
+                address=GYRO_FACTORIES[chain], abi=get_abi("GyroECLPPoolFactory")
+            )
+            is_eclp_pool = factory.functions.isPoolFromFactory(address).call()
+            print(f"{chain}: {pool_id} is eclp pool: {is_eclp_pool}")
+            if is_eclp_pool:
+                eclp_pools[chain][pool_id] = f"{symbol}-fee-split"
     return eclp_pools

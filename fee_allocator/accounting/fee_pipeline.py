@@ -63,7 +63,7 @@ def run_fees(
         f"veBAL aura share at block {_target_mainnet_block}: {aura_vebal_share}"
     )
     existing_aura_bribs: List[Dict] = fetch_hh_aura_bribs()
-    eclp_pools = get_eclp_fee_split_pools()
+    eclp_pools = get_eclp_fee_split_pools(web3_instances)
     # Collect all BPT prices:
     for chain in Chains:
         print(f"Collecting BPT prices for Chain {chain.value}")
