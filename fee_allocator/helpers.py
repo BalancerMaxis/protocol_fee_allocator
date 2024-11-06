@@ -397,7 +397,12 @@ def fetch_hh_aura_bribs() -> List[Dict]:
 def get_eclp_fee_split_pools(web3_instances: Munch[str, Web3]) -> Dict:
     eclp_pools = {chain.value: {} for chain in Chains}
     for pool in fetch_all_pools_info():
-        pool_id, address, symbol, chain = pool["id"], Web3.to_checksum_address(pool["address"]), pool["symbol"], pool["chain"].lower()
+        pool_id, address, symbol, chain = (
+            pool["id"],
+            Web3.to_checksum_address(pool["address"]),
+            pool["symbol"],
+            pool["chain"].lower(),
+        )
         if chain in eclp_pools.keys():
             factory = web3_instances[chain].eth.contract(
                 address=GYRO_FACTORIES[chain], abi=get_abi("GyroECLPPoolFactory")
