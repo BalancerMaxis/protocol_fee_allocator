@@ -10,6 +10,7 @@ CHAIN_ID = "1"
 
 
 def get_report(start_date, end_date):
+    # docs: https://mimic-fi.notion.site/Balancer-API-explanation-1289958dbf4d80beb76ad13462898fee
     response = requests.get(
         f"{BASE_URL}{ENV_ID}",
         params={
