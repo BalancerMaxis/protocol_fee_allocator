@@ -11,28 +11,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup Python 3.9
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.10"
+      - name: Setup Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-    - name: Collect fees
-      env:
-        DRPC_KEY: ${{ secrets.DRPC_KEY }}
-      run: |
-        pwd
-        pip3 install -r requirements.txt
-        python3 main.py
+      - name: Collect fees
+        env:
+          DRPC_KEY: ${{ secrets.DRPC_KEY }}
+        run: |
+          pwd
+          pip3 install -r requirements.txt
+          python3 main.py
 
-    - name: Create PR
-      id: cpr
-      uses: peter-evans/create-pull-request@v7
-      with:
-        commit-message: "feat: new fees report"
-        title: "New Fees Report"
-        branch: gha-fees-report
-        delete-branch: true
-        labels: "Fees-Report"
+      - name: Create PR
+        id: cpr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "feat: new fees report"
+          title: "New Fees Report"
+          branch: gha-fees-report
+          delete-branch: true
+          labels: "Fees-Report"
