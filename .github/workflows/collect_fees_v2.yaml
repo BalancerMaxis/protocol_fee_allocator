@@ -15,7 +15,7 @@ jobs:
       - name: Checkout v1 with submodules
         uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
 
       - name: Setup Python 3.10
         uses: actions/setup-python@v5
