@@ -20,7 +20,11 @@ def get_report(start_date, end_date):
             "endDate": end_date,
         },
     )
-    return response.json()
+    response.raise_for_status()
+    report = response.json()["depositors"]
+    for chain, amount in report.items():
+        report[chain] = int(amount)
+    return report
 
 
 if __name__ == "__main__":
@@ -31,7 +35,7 @@ if __name__ == "__main__":
 
     report = get_report(yesterday.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d"))
     with open(
-        f"fee_allocator/fees_collected/fees_{epoch_start.strftime('%Y-%m-%d')}_{yesterday.strftime('%Y-%m-%d')}.json",
+        f"fee_allocator/fees_collected/fees_{epoch_start.strftime('%Y-%m-%d')}_{today.strftime('%Y-%m-%d')}.json",
         "w",
     ) as f:
-        json.dump(report["depositors"], f, indent=2)
+        json.dump(report, f, indent=2)
