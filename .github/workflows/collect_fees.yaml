@@ -23,6 +23,7 @@ jobs:
       - name: Collect fees
         env:
           DRPC_KEY: ${{ secrets.DRPC_KEY }}
+          GRAPH_API_KEY: ${{ secrets.GRAPH_API_KEY }}
         run: |
           pwd
           end_day=${{ github.event.inputs.end_day }}
