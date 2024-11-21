@@ -3,7 +3,7 @@ name: Update Live Core Fees JSON
 on:
   workflow_dispatch:
   schedule:
-    # Every hour
+    # every 12 hours
     - cron: "0 0,12 * * *"
 
 jobs:
