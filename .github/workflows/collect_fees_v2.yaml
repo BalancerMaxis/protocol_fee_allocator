@@ -37,6 +37,7 @@ jobs:
       - name: Run v1 allocator
         env:
           DRPC_KEY: ${{ secrets.DRPC_KEY }}
+          GRAPH_API_KEY: ${{ secrets.GRAPH_API_KEY }}
         run: |
           pip3 install -r requirements.txt
           python3 main.py --ts_now ${{ steps.date_calc.outputs.end_timestamp }} --ts_in_the_past ${{ steps.date_calc.outputs.start_timestamp }} --fees_file_name fees_${{ steps.date_calc.outputs.date_range_string }}.json --output_file_name incentives_${{ steps.date_calc.outputs.date_range_string }}.csv

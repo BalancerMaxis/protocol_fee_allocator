@@ -3,7 +3,7 @@ name: Update Live Core Fees JSON
 on:
   workflow_dispatch:
   schedule:
-    # Every hour
+    # every 12 hours
     - cron: "0 0,12 * * *"
 
 jobs:
@@ -22,6 +22,7 @@ jobs:
       - name: Collect fees
         env:
           DRPC_KEY: ${{ secrets.DRPC_KEY }}
+          GRAPH_API_KEY: ${{ secrets.GRAPH_API_KEY }}
         run: |
           pwd
           pip3 install -r requirements.txt
