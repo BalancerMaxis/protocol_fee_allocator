@@ -142,8 +142,8 @@ def recon_and_validate(
 
 
 def generate_and_save_input_csv(
-    fees: dict, period_ends: int, mapped_pools_info: Dict
-) -> None:
+    fees: dict, period_ends: int, mapped_pools_info: Dict, fees_to_gyro: Decimal
+) -> str:
     """
     Function that generates and saves csv in format:
     target_root_gauge,platform,amount_of_incentives
@@ -190,6 +190,14 @@ def generate_and_save_input_csv(
             "target": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",  # DAO msig
             "platform": "payment",
             "amount": round(dao_share, 4),
+        }
+    )
+    # Add gyro share to the output
+    output.append(
+        {
+            "target": "",  # gyro fee recipient
+            "platform": "payment",
+            "amount": round(fees_to_gyro, 4),
         }
     )
     # Convert to dataframe and save to csv
