@@ -9,17 +9,21 @@ import requests
 from munch import Munch
 from web3 import Web3
 
+from bal_tools import BalPoolsGauges, Subgraph
 from fee_allocator.accounting import PROJECT_ROOT
 from fee_allocator.accounting.collectors import collect_fee_info
 from fee_allocator.accounting.distribution import calc_and_split_incentives
 from fee_allocator.accounting.distribution import re_distribute_incentives
 from fee_allocator.accounting.distribution import re_route_incentives
+from fee_allocator.accounting.distribution import add_last_join_exit
+from fee_allocator.accounting.distribution import filter_dusty_bal_incentives
+
 from fee_allocator.accounting.logger import logger
-from fee_allocator.accounting.settings import BALANCER_GRAPH_URLS
 from fee_allocator.accounting.settings import CORE_POOLS_URL
 from fee_allocator.accounting.settings import Chains
 from fee_allocator.accounting.settings import FEE_CONSTANTS_URL
 from fee_allocator.accounting.settings import REROUTE_CONFIG_URL
+from fee_allocator.accounting.settings import MIN_VERBAL_BRIBE_AFTER_ALL_REDISTRIBUTIONS
 from fee_allocator.helpers import calculate_aura_vebal_share
 from fee_allocator.helpers import fetch_hh_aura_bribs
 from fee_allocator.helpers import get_balancer_pool_snapshots
@@ -28,12 +32,12 @@ from fee_allocator.helpers import get_twap_bpt_price
 
 
 def run_fees(
-        web3_instances: Munch[Web3],
-        timestamp_now: int,
-        timestamp_2_weeks_ago: int,
-        output_file_name: str,
-        fees_to_distribute: dict,
-        mapped_pools_info: dict,
+    web3_instances: Munch[Web3],
+    timestamp_now: int,
+    timestamp_2_weeks_ago: int,
+    output_file_name: str,
+    fees_to_distribute: dict,
+    mapped_pools_info: dict,
 ) -> dict:
     """
     This function is used to run the fee allocation process
@@ -53,7 +57,7 @@ def run_fees(
     # Estimate mainnet current block to calculate aura veBAL share
     _target_mainnet_block = get_block_by_ts(timestamp_now, Chains.MAINNET.value)
     aura_vebal_share = calculate_aura_vebal_share(
-        web3_instances.mainnet, _target_mainnet_block
+        web3_instances["mainnet"], _target_mainnet_block
     )
     logger.info(
         f"veBAL aura share at block {_target_mainnet_block}: {aura_vebal_share}"
@@ -61,8 +65,22 @@ def run_fees(
     existing_aura_bribs: List[Dict] = fetch_hh_aura_bribs()
     # Collect all BPT prices:
     for chain in Chains:
-        pools = core_pools.get(chain.value, None)
-        if pools is None:
+        print(f"Collecting BPT prices for Chain {chain.value}")
+        poolutil = BalPoolsGauges(chain.value)
+        listed_core_pools = core_pools.get(chain.value, None)
+        pools = {}
+        if listed_core_pools is None:
+            continue
+        ###  Remove any invalid core pools
+        for pool_id, description in listed_core_pools.items():
+            if poolutil.has_alive_preferential_gauge(pool_id):
+                pools[pool_id] = description
+            else:
+                print(
+                    f"Warning pool {pool_id}({description}) on chain {chain} is in the core pools list but does not have a gauge.  Skipping."
+                )
+        if chain.value == Chains.ZKEVM.value:
+            print("SKIPPING ZKEVM DUE TO RPC ISSUES, CHANGE ME WHEN FIXED!")
             continue
         target_blocks[chain.value] = (
             get_block_by_ts(timestamp_now, chain.value),  # Block now
@@ -92,12 +110,13 @@ def run_fees(
             f"{target_blocks[chain.value]}"
         )
         # Also, collect all pool snapshots:
+        graph_url = Subgraph(chain.value).get_subgraph_url()
         pool_snapshots[chain.value] = (
             get_balancer_pool_snapshots(
-                target_blocks[chain.value][0], BALANCER_GRAPH_URLS[chain.value]
+                target_blocks[chain.value][0], graph_url
             ),  # now
             get_balancer_pool_snapshots(
-                target_blocks[chain.value][1], BALANCER_GRAPH_URLS[chain.value]
+                target_blocks[chain.value][1], graph_url
             ),  # 2 weeks ago
         )
         logger.info(
@@ -129,12 +148,17 @@ def run_fees(
             mapped_pools_info,
         )
         re_routed_incentives = re_route_incentives(_incentives, chain, reroute_config)
-        incentives[chain.value] = re_distribute_incentives(
+        redistributed_incentives = re_distribute_incentives(
             re_routed_incentives,
             Decimal(fee_constants["min_aura_incentive"]),
             Decimal(fee_constants["min_vote_incentive_amount"]),
-            aura_vebal_share=Decimal(aura_vebal_share),
         )
+        # Filter BAL incentives under 75 bucks to Aura
+        filtered_incentives = filter_dusty_bal_incentives(
+            redistributed_incentives, MIN_VERBAL_BRIBE_AFTER_ALL_REDISTRIBUTIONS
+        )
+        ## Add data about last join/exit
+        incentives[chain.value] = add_last_join_exit(filtered_incentives, chain)
     # Wrap into dataframe and sort by earned fees and store to csv
     joint_incentives_data = {
         **incentives[Chains.MAINNET.value],
@@ -143,7 +167,7 @@ def run_fees(
         **incentives[Chains.BASE.value],
         **incentives[Chains.AVALANCHE.value],
         **incentives[Chains.GNOSIS.value],
-        **incentives.get(Chains.ZKEVM.value, {})
+        **incentives.get(Chains.ZKEVM.value, {}),
     }
     joint_incentives_df = pd.DataFrame.from_dict(joint_incentives_data, orient="index")
 

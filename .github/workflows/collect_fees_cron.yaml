@@ -3,43 +3,37 @@ name: Update Live Core Fees JSON
 on:
   workflow_dispatch:
   schedule:
-    # Every hour
-    - cron: "0 * * * *"
+    # every 12 hours
+    - cron: "0 0,12 * * *"
 
 jobs:
   generate_fees_report:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup Python 3.9
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
+      - name: Setup Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-    - name: Collect fees
-      env:
-        ETHNODEURL: ${{ secrets.ETHNODEURL }}
-        ARBNODEURL: ${{ secrets.ARBNODEURL }}
-        POLYNODEURL: ${{ secrets.POLYNODEURL }}
-        BASENODEURL: ${{ secrets.BASENODEURL }}
-        GNOSISNODEURL: ${{ secrets.GNOSISNODEURL }}
-        GNOSIS_API_KEY: ${{ secrets.GNOSIS_API_KEY }}
-        AVALANCHENODEURL: ${{ secrets.AVALANCHENODEURL }}
-        POLYZKEVMNODEURL: ${{ secrets.POLYZKEVMNODEURL }}
-      run: |
-        pwd
-        pip3 install -r requirements.txt
-        python3 main.py
+      - name: Collect fees
+        env:
+          DRPC_KEY: ${{ secrets.DRPC_KEY }}
+          GRAPH_API_KEY: ${{ secrets.GRAPH_API_KEY }}
+        run: |
+          pwd
+          pip3 install -r requirements.txt
+          python3 main.py
 
-    - name: Create PR
-      id: cpr
-      uses: peter-evans/create-pull-request@v5
-      with:
-        commit-message: "feat: new fees report"
-        title: "New Fees Report"
-        branch: gha-fees-report
-        delete-branch: true
-        labels: "Fees-Report"
+      - name: Create PR
+        id: cpr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "feat: new fees report"
+          title: "New Fees Report"
+          branch: gha-fees-report
+          delete-branch: true
+          labels: "Fees-Report"

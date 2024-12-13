@@ -4,16 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       ts_now:
-        description: 'The end timestamp to run on like 1633459200'
+        description: "The end timestamp to run on like 1633459200"
         required: false
       ts_in_the_past:
-        description: 'The  start timestamp(in the past) to run on like 1633459200'
+        description: "The  start timestamp(in the past) to run on like 1633459200"
         required: false
       output_file_name:
-        description: 'The name of the output file that will land in allocations/'
+        description: "The name of the output file that will land in allocations/"
         required: false
       fees_file_name:
-        description: 'The name of the fees file that will be read from fees_collected/'
+        description: "The name of the fees file that will be read from fees_collected/"
         required: false
 
 jobs:
@@ -21,35 +21,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup Python 3.9
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
+      - name: Setup Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-    - name: Collect fees
-      env:
-        ETHNODEURL: ${{ secrets.ETHNODEURL }}
-        ARBNODEURL: ${{ secrets.ARBNODEURL }}
-        POLYNODEURL: ${{ secrets.POLYNODEURL }}
-        BASENODEURL: ${{ secrets.BASENODEURL }}
-        GNOSISNODEURL: ${{ secrets.GNOSISNODEURL }}
-        GNOSIS_API_KEY: ${{ secrets.GNOSIS_API_KEY }}
-        AVALANCHENODEURL: ${{ secrets.AVALANCHENODEURL }}
-        POLYZKEVMNODEURL: ${{ secrets.POLYZKEVMNODEURL }}
-      run: |
-        pwd
-        pip3 install -r requirements.txt
-        python3 main.py --ts_now ${{ github.event.inputs.ts_now }} --ts_in_the_past ${{ github.event.inputs.ts_in_the_past }} --output_file_name ${{ github.event.inputs.output_file_name }} --fees_file_name ${{ github.event.inputs.fees_file_name }}
+      - name: Collect fees
+        env:
+          DRPC_KEY: ${{ secrets.DRPC_KEY }}
+          GRAPH_API_KEY: ${{ secrets.GRAPH_API_KEY }}
+        run: |
+          pwd
+          pip3 install -r requirements.txt
+          python3 main.py --ts_now ${{ github.event.inputs.ts_now }} --ts_in_the_past ${{ github.event.inputs.ts_in_the_past }} --output_file_name ${{ github.event.inputs.output_file_name }} --fees_file_name ${{ github.event.inputs.fees_file_name }}
 
-    - name: Create PR
-      id: cpr
-      uses: peter-evans/create-pull-request@v5
-      with:
-        commit-message: "feat: new fees report"
-        title: "New Fees Report"
-        branch: gha-fees-report
-        delete-branch: true
-        labels: "Fees-Report"
+      - name: Create PR
+        id: cpr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "feat: new fees report"
+          title: "New Fees Report"
+          branch: gha-fees-report
+          delete-branch: true
+          labels: "Fees-Report"
