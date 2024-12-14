@@ -7,7 +7,11 @@ from typing import Optional
 import requests
 
 from bal_tools import BalPoolsGauges
-from fee_allocator.accounting.settings import Chains, OVERRIDES_URL
+from fee_allocator.accounting.settings import (
+    Chains,
+    OVERRIDES_URL,
+    MAX_INCENTIVES_AS_PCT_OF_EARNED,
+)
 
 
 # TODO remove existing existing_aura_bribs from function.  Perhaps find another way to count aura votes already placed
@@ -16,13 +20,9 @@ def calc_and_split_incentives(
     fees: Dict,
     chain: str,
     fees_to_distribute: Decimal,
-    min_aura_incentive: Decimal,
     dao_share: Decimal,
     vebal_share: Decimal,
-    min_existing_aura_incentive: Decimal,
     aura_vebal_share: Decimal,
-    existing_aura_bribs: List[Dict],
-    mapped_pools_info: Dict,
 ) -> Dict[str, Dict]:
     """
     Calculate and split incentives between aura and balancer pools
@@ -45,7 +45,15 @@ def calc_and_split_incentives(
         pool_share = pool_fees / Decimal(total_fees)
         # If aura incentives is less than 500 USDC, we pay all incentives to balancer
         total_incentive = pool_share * fees_to_distr_wo_dao_vebal
-
+        # TODO: DECIDE:
+        #   Option 1 which is global, just means that no more than MAX_INCENITVES_AS_PCT_OF_EARNED * earned will be paid
+        #     in a given round.  Redistribution of pools under the cap may still allow other pools to go over.
+        #   Option 2 is to use the cap_incentives function later in the pipeline. This ensures that at a pool leve
+        #     the specified limits are respected.  At the moment both are on, if it remains that way can delete the next 4 lines of code
+        if MAX_INCENTIVES_AS_PCT_OF_EARNED:
+            total_incentive = min(
+                total_incentive, pool_fees * MAX_INCENTIVES_AS_PCT_OF_EARNED
+            )
         aura_incentives = round(total_incentive * aura_vebal_share, 4)
         bal_incentives = round(total_incentive - aura_incentives, 4)
         fees_to_dao = round(pool_share * fees_to_distribute * dao_share, 4)
@@ -63,6 +71,7 @@ def calc_and_split_incentives(
             "redirected_incentives": Decimal(0),
             "reroute_incentives": Decimal(0),
         }
+    ## Handle caps based on earned
     return pool_incentives
 
 
@@ -205,6 +214,41 @@ def re_distribute_incentives(
     # Now redistribute again with no buffer
     print(f"Final pass: Redistributing Aura with no buffer.")
     return handle_aura_min(result, min_aura_incentive)
+
+
+def cap_incentives(
+    incentives: Dict[str, Dict],
+    aura_vebal_share_pct: Decimal,
+    dao_share_pct: Decimal,
+    vebal_share_pct: Decimal,
+    max_incentive_pct=MAX_INCENTIVES_AS_PCT_OF_EARNED,
+):
+    """
+    Caps incentives to a % of earned fees
+    """
+    if not max_incentive_pct:
+        return incentives
+    for pool_id, _data in incentives.items():
+        total_incentive = _data["total_incentives"]
+        earned_fees = _data["earned_fees"]
+        if total_incentive > earned_fees * max_incentive_pct:
+            capped_incentive = earned_fees * max_incentive_pct
+            leftover_incentives = total_incentive - capped_incentive
+            print(
+                f"Caping {pool_id} incentives from {total_incentive} to {capped_incentive}"
+            )
+            aura_incentive = capped_incentive * aura_vebal_share_pct
+            bal_incentive = capped_incentive - aura_incentive
+            dao_share = _data["fees_to_dao"] + leftover_incentives * dao_share_pct
+            vebal_share = _data["fees_to_vebal"] + leftover_incentives * vebal_share_pct
+            assert aura_incentive + bal_incentive == capped_incentive
+            assert dao_share + vebal_share + capped_incentive == total_incentive
+            _data["aura_incentives"] = aura_incentive
+            _data["bal_incentives"] = bal_incentive
+            _data["total_incentives"] = capped_incentive
+            _data["fees_to_dao"] = dao_share
+            _data["fees_to_vebal"] = vebal_share
+    return incentives
 
 
 def add_last_join_exit(
