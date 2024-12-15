@@ -64,7 +64,7 @@ def calc_and_split_incentives(
         fees_to_vebal = round(pool_share * fees_to_distribute * vebal_share, 4)
         if clawed_back_incentives:
             fees_to_dao += round(pool_share * clawed_back_incentives * dao_share, 4)
-            fees_to_vebal += round(pool_share * clawed_back_incentives * vebal_share, 4)
+            fees_to_vebal += clawed_back_incentives - fees_to_dao
         # Put it all together in a dict
         pool_incentives[pool] = {
             "chain": chain,
