@@ -29,7 +29,7 @@ def calc_and_split_incentives(
     """
     pool_incentives = {}
     # Calculate pool share in fees
-    fees_to_distr_wo_dao_vebal = (
+    fees_available_for_incentives = (
         fees_to_distribute
         - (fees_to_distribute * dao_share)
         - (fees_to_distribute * vebal_share)
@@ -43,22 +43,29 @@ def calc_and_split_incentives(
     for pool, data in fees.items():
         pool_fees = data["bpt_token_fee_in_usd"] + data["token_fees_in_usd"]
         pool_share = pool_fees / Decimal(total_fees)
-        # If aura incentives is less than 500 USDC, we pay all incentives to balancer
-        total_incentive = pool_share * fees_to_distr_wo_dao_vebal
         # TODO: DECIDE:
         #   Option 1 which is global, just means that no more than MAX_INCENITVES_AS_PCT_OF_EARNED * earned will be paid
         #     in a given round.  Redistribution of pools under the cap may still allow other pools to go over.
         #   Option 2 is to use the cap_incentives function later in the pipeline. This ensures that at a pool leve
         #     the specified limits are respected.  At the moment both are on, if it remains that way can delete the next 4 lines of code
+        total_incentive = pool_share * fees_available_for_incentives
+
         if MAX_INCENTIVES_AS_PCT_OF_EARNED:
-            total_incentive = min(
+            capped_incentives = min(
                 total_incentive, pool_fees * MAX_INCENTIVES_AS_PCT_OF_EARNED
             )
+            clawed_back_incentives = total_incentive - capped_incentives
+            total_incentive = capped_incentives
+        # Split fees between aura and bal fees
         aura_incentives = round(total_incentive * aura_vebal_share, 4)
         bal_incentives = round(total_incentive - aura_incentives, 4)
+        # Handle DAO and veBAL
         fees_to_dao = round(pool_share * fees_to_distribute * dao_share, 4)
         fees_to_vebal = round(pool_share * fees_to_distribute * vebal_share, 4)
-        # Split fees between aura and bal fees
+        if clawed_back_incentives:
+            fees_to_dao += round(pool_share * clawed_back_incentives * dao_share, 4)
+            fees_to_vebal += round(pool_share * clawed_back_incentives * vebal_share, 4)
+        # Put it all together in a dict
         pool_incentives[pool] = {
             "chain": chain,
             "symbol": data["symbol"],
