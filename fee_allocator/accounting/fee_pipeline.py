@@ -79,6 +79,10 @@ def run_fees(
                 print(
                     f"Warning pool {pool_id}({description}) on chain {chain} is in the core pools list but does not have a gauge.  Skipping."
                 )
+
+        if chain.value == Chains.ZKEVM.value:
+            print("SKIPPING ZKEVM DUE TO RPC ISSUES, CHANGE ME WHEN FIXED!")
+            continue
         target_blocks[chain.value] = (
             get_block_by_ts(timestamp_now, chain.value),  # Block now
             get_block_by_ts(timestamp_2_weeks_ago, chain.value),  # Block 2 weeks ago
