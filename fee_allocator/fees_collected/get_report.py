@@ -33,7 +33,7 @@ if __name__ == "__main__":
     yesterday = today - timedelta(days=1)
     epoch_start = today - timedelta(days=14)
 
-    report = get_report(yesterday.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d"))
+    report = get_report(epoch_start.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d"))
     with open(
         f"fee_allocator/fees_collected/fees_{epoch_start.strftime('%Y-%m-%d')}_{today.strftime('%Y-%m-%d')}.json",
         "w",
