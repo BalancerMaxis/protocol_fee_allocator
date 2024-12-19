@@ -79,6 +79,7 @@ def run_fees(
                 print(
                     f"Warning pool {pool_id}({description}) on chain {chain} is in the core pools list but does not have a gauge.  Skipping."
                 )
+
         if chain.value == Chains.ZKEVM.value:
             print("SKIPPING ZKEVM DUE TO RPC ISSUES, CHANGE ME WHEN FIXED!")
             continue
