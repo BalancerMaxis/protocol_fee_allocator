@@ -30,12 +30,16 @@ def get_report(start_date, end_date):
 if __name__ == "__main__":
     # run this every other thursday after the end of an epoch
     today = datetime.now()
-    yesterday = today - timedelta(days=1)
-    epoch_start = today - timedelta(days=14)
 
-    report = get_report(yesterday.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d"))
-    with open(
-        f"fee_allocator/fees_collected/fees_{epoch_start.strftime('%Y-%m-%d')}_{today.strftime('%Y-%m-%d')}.json",
-        "w",
-    ) as f:
-        json.dump(report, f, indent=2)
+    if bool(today.strftime("%W") % 2):
+        # week number is uneven; there should be a new report
+
+        yesterday = today - timedelta(days=1)
+        epoch_start = today - timedelta(days=14)
+
+        report = get_report(yesterday.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d"))
+        with open(
+            f"fee_allocator/fees_collected/fees_{epoch_start.strftime('%Y-%m-%d')}_{today.strftime('%Y-%m-%d')}.json",
+            "w",
+        ) as f:
+            json.dump(report, f, indent=2)
