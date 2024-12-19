@@ -21,17 +21,23 @@ def get_report(start_date, end_date):
         },
     )
     response.raise_for_status()
+    # breakpoint()
     report = response.json()["depositors"]
+    total = 0
     for chain, amount in report.items():
         report[chain] = int(amount)
-    return report
+        total += int(amount)
+    if total > 0:
+        return report
+    else:
+        raise ValueError("Sum of collected fees is not > 0")
 
 
 if __name__ == "__main__":
     # run this every other thursday after the end of an epoch
     today = datetime.now()
 
-    if bool(today.strftime("%W") % 2):
+    if bool(int(today.strftime("%W")) % 2):
         # week number is uneven; there should be a new report
 
         yesterday = today - timedelta(days=1)
