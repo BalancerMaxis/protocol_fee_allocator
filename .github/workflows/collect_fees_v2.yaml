@@ -45,6 +45,7 @@ jobs:
       - name: Run v2 allocator
         env:
           DRPC_KEY: ${{ secrets.DRPC_KEY }}
+          GRAPH_API_KEY: ${{ secrets.GRAPH_API_KEY }}
         run: |
           cd v2
           git checkout biweekly-runs
