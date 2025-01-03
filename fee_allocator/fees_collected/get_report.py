@@ -37,7 +37,7 @@ if __name__ == "__main__":
     # run this every other thursday after the end of an epoch
     today = datetime.now()
 
-    if bool(int(today.strftime("%W")) % 2):
+    if bool(int(today.strftime("%V")) % 2):
         # week number is uneven; there should be a new report
 
         yesterday = today - timedelta(days=1)
