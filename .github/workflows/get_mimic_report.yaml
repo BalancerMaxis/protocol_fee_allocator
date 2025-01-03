@@ -2,6 +2,9 @@ name: Collect Mimic Fee Data
 
 on:
   workflow_dispatch:
+  schedule:
+    # every thursday at 9am utc
+    - cron: "0 9 * * THU"
 
 jobs:
   collect_fees:
@@ -27,11 +30,14 @@ jobs:
       - name: Run Mimic reporting script
         run: python fee_allocator/fees_collected/get_report.py
 
+      - name: Save date
+        run: echo "RUN_DATE=$(date +%Y%m%d)" >> $GITHUB_ENV
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
-          commit-message: "task: new mimic fees report for period ending ${{ github.run_date }}"
-          title: "Biweekly Mimic data ending ${{ github.run_date }}"
+          commit-message: "task: new mimic fees report for period ending ${{ env.RUN_DATE }}"
+          title: "Biweekly Mimic data ending ${{ env.RUN_DATE }}"
           branch: gha-mimic-fees
           branch-suffix: timestamp
           delete-branch: true
