@@ -284,7 +284,13 @@ def fetch_token_price_balgql_timerange(
     transport = RequestsHTTPTransport(
         url=BAL_GQL_URL,
         retries=2,
-        headers={"chainId": CHAIN_TO_CHAIN_ID_MAP[chain]},
+        retry_backoff_factor=0.5,
+        retry_status_forcelist=[429, 500, 502, 503, 504, 520],
+        headers={
+            "x-graphql-client-name": "Maxxis",
+            "x-graphql-client-version": "protocol_fee_allocator/v1",
+            "chainId": CHAIN_TO_CHAIN_ID_MAP[chain],
+        },
     )
     client = Client(transport=transport, fetch_schema_from_transport=True)
     query = gql(
