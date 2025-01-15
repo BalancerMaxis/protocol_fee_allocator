@@ -43,7 +43,7 @@ CHAIN_TO_CHAIN_ID_MAP = {
 }
 BAL_GQL_URL = "https://api-v3.balancer.fi/"
 BAL_DEFAULT_HEADERS = {
-  "x-graphql-client-name": "Maxxis",
+  "x-graphql-client-name": "Maxis",
   "x-graphql-client-version": "protocol_fee_allocator",
 }
 BLOCKS_QUERY = """
