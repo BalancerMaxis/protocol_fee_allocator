@@ -8,7 +8,7 @@ from bal_tools import BalPoolsGauges
 
 
 def collect_fee_info(
-    pools: list[str],
+    pools: dict[str, str],
     chain: Chains,
     pools_now: list[dict],
     pools_shifted: list[Dict],
@@ -22,7 +22,7 @@ def collect_fee_info(
     """
     fees = {}
     token_fees = defaultdict(list)
-    for pool in pools:
+    for pool, symbol in pools.items():
         poolutil = BalPoolsGauges(chain.value)
         if not poolutil.has_alive_preferential_gauge(pool):
             print(
@@ -81,7 +81,7 @@ def collect_fee_info(
                 )
                 token_fees_in_usd += Decimal(token_fee) * Decimal(token_price)
         fees[pool_snapshot_now["pool"]["id"]] = {
-            "symbol": pool_snapshot_now["pool"]["symbol"],
+            "symbol": symbol,
             "pool_addr": pool_snapshot_now["pool"]["address"],
             "bpt_token_fee": round(bpt_token_fee, 2),
             # One of two fields below should always be 0 because
