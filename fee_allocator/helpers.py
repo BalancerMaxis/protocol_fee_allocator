@@ -42,6 +42,10 @@ CHAIN_TO_CHAIN_ID_MAP = {
     "zkevm": "1101",
 }
 BAL_GQL_URL = "https://api-v3.balancer.fi/"
+BAL_DEFAULT_HEADERS = {
+  "x-graphql-client-name": "Maxxis",
+  "x-graphql-client-version": "protocol_fee_allocator",
+}
 BLOCKS_QUERY = """
 query {{
     blocks(where:{{timestamp_gt: {ts_gt}, timestamp_lt: {ts_lt} }}) {{
@@ -162,6 +166,7 @@ def get_block_by_ts(timestamp: int, chain: str) -> int:
     transport = RequestsHTTPTransport(
         url=Subgraph(chain).get_subgraph_url("blocks"),
         retries=2,
+        headers=BAL_DEFAULT_HEADERS
     )
     query = gql(
         BLOCKS_QUERY.format(
@@ -284,7 +289,7 @@ def fetch_token_price_balgql_timerange(
     transport = RequestsHTTPTransport(
         url=BAL_GQL_URL,
         retries=2,
-        headers={"chainId": CHAIN_TO_CHAIN_ID_MAP[chain]},
+        headers={**BAL_DEFAULT_HEADERS, "chainId": CHAIN_TO_CHAIN_ID_MAP[chain]},
     )
     client = Client(transport=transport, fetch_schema_from_transport=True)
     query = gql(
@@ -313,7 +318,7 @@ def fetch_token_price_balgql_timerange(
 
 
 def get_balancer_pool_snapshots(block: int, graph_url: str) -> Optional[List[Dict]]:
-    transport = RequestsHTTPTransport(url=graph_url, retries=3)
+    transport = RequestsHTTPTransport(url=graph_url, retries=3, headers=BAL_DEFAULT_HEADERS)
     client = Client(
         transport=transport, fetch_schema_from_transport=True, execute_timeout=60
     )
@@ -357,6 +362,7 @@ def fetch_all_pools_info() -> List[Dict]:
     transport = RequestsHTTPTransport(
         url=BAL_GQL_URL,
         retries=2,
+        headers=BAL_DEFAULT_HEADERS
     )
     client = Client(transport=transport, fetch_schema_from_transport=True)
     query = gql(BAL_GET_VOTING_LIST_QUERY)
