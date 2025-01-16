@@ -69,7 +69,7 @@ def run_fees(
         poolutil = BalPoolsGauges(chain.value)
         listed_core_pools = core_pools.get(chain.value, None)
         pools = {}
-        if listed_core_pools is None:
+        if listed_core_pools is None or not fees_to_distribute.get(chain.value):
             continue
         ###  Remove any invalid core pools
         for pool_id, description in listed_core_pools.items():
