@@ -79,6 +79,12 @@ def run_fees(
                 print(
                     f"Warning pool {pool_id}({description}) on chain {chain} is in the core pools list but does not have a gauge.  Skipping."
                 )
+        if not pools:
+            logger.warning(
+                f"{chain.value} has {fees_to_distribute[chain.value]} in fees but no core pools defined. setting fees to 0."
+            )
+            fees_to_distribute[chain.value] = 0
+            continue
 
         target_blocks[chain.value] = (
             get_block_by_ts(timestamp_now, chain.value),  # Block now
