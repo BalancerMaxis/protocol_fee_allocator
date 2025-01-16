@@ -555,9 +555,9 @@
     "periodEnd": 1734566400
   },
   {
-    "feesCollected": 536024.70,
-    "incentivesDistributed": 536024.70,
-    "feesNotDistributed": -0.00,
+    "feesCollected": 536024.7,
+    "incentivesDistributed": 536024.7,
+    "feesNotDistributed": -0.0,
     "auraIncentives": 180334.16,
     "balIncentives": 87678.19,
     "feesToDao": 93804.32,
@@ -567,10 +567,29 @@
     "auraIncentivesPctTotal": 0.6729,
     "balIncentivesPct": 0.1636,
     "balIncentivesPctTotal": 0.3271,
-    "feesToDaoPct": 0.1750,
-    "feesToVebalPct": 0.3250,
+    "feesToDaoPct": 0.175,
+    "feesToVebalPct": 0.325,
     "createdAt": 1735916396,
     "periodStart": 1734566400,
     "periodEnd": 1735776000
+  },
+  {
+    "feesCollected": 401333.23,
+    "incentivesDistributed": 401333.23,
+    "feesNotDistributed": -0.00,
+    "auraIncentives": 134006.76,
+    "balIncentives": 66659.86,
+    "feesToDao": 70233.32,
+    "feesToVebal": 130433.30,
+    "auravebalShare": 0.67,
+    "auraIncentivesPct": 0.3339,
+    "auraIncentivesPctTotal": 0.6678,
+    "balIncentivesPct": 0.1661,
+    "balIncentivesPctTotal": 0.3322,
+    "feesToDaoPct": 0.1750,
+    "feesToVebalPct": 0.3250,
+    "createdAt": 1737009899,
+    "periodStart": 1735776000,
+    "periodEnd": 1736985600
   }
 ]
