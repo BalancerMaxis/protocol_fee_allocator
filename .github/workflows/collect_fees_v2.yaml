@@ -70,6 +70,7 @@ jobs:
             - [ ] (`earned_fees` + `fees_to_vebal` + `fees_to_dao`) >= total_swept onchain (per chain)
             - [ ] `fees_to_dao` / (`earned_fees` + `fees_to_vebal` + `fees_to_dao`) == .175
             - [ ] `min(aura_incentives)` > threshold
+            - [ ] `min(bal_incentives)` > threshold
           branch: gha-biweekly-fees
           branch-suffix: timestamp
           delete-branch: true
