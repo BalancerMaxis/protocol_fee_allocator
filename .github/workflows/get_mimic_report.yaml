@@ -36,9 +36,14 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
-          commit-message: "task: new mimic fees report for period ending ${{ env.RUN_DATE }}"
+          commit-message: "chore: new mimic fees report for period ending ${{ env.RUN_DATE }}"
           title: "Biweekly Mimic data ending ${{ env.RUN_DATE }}"
           branch: gha-mimic-fees
           branch-suffix: timestamp
           delete-branch: true
           labels: "Biweekly-Mimic-Report"
+          reviewers: |
+            gosuto-inzasheru
+            Xeonus
+            jalbrekt85
+            Zen-Maxi
