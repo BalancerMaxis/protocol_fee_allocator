@@ -62,7 +62,20 @@ jobs:
         with:
           commit-message: "task: new fees report (v1 and v2) ending ${{ github.event.inputs.end_day }}"
           title: "Biweekly Fee Report (v1 and v2) ending ${{ github.event.inputs.end_day }}"
+          body: |
+            Checks before merging:
+            - [ ] all pools must be a core pool
+            - [ ] `total_incentives` + `fees_to_vebal` + `fees_to_dao` == usdc onchain
+            - [ ] `aura_incentives` / `total_incentives` ~= aurabal's vebal capture (https://app.aura.finance/#/stats)
+            - [ ] (`earned_fees` + `fees_to_vebal` + `fees_to_dao`) >= total_swept onchain (per chain)
+            - [ ] `fees_to_dao` / (`earned_fees` + `fees_to_vebal` + `fees_to_dao`) == .175
+            - [ ] `min(aura_incentives)` > threshold
           branch: gha-biweekly-fees
           branch-suffix: timestamp
           delete-branch: true
           labels: "Biweekly-Report"
+          reviewers: |
+            gosuto-inzasheru
+            Xeonus
+            jalbrekt85
+            Zen-Maxi
