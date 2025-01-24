@@ -54,6 +54,7 @@ jobs:
           python3 main.py --ts_now ${{ steps.date_calc.outputs.end_timestamp }} --ts_in_the_past ${{ steps.date_calc.outputs.start_timestamp }} --fees_file_name fees_${{ steps.date_calc.outputs.date_range_string }}.json --output_file_name incentives_${{ steps.date_calc.outputs.date_range_string }}.csv
           cd ..
           cp v2/fee_allocator/allocations/incentives/* fee_allocator/allocations/v2
+          cp v2/fee_allocator/allocations/output_for_msig/* fee_allocator/allocations/output_for_msig/v2
           cp v2/fee_allocator/payloads/* fee_allocator/tx_builder/transactions/v2
 
       - name: Create PR
