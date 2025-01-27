@@ -28,12 +28,9 @@ jobs:
           pip3 install -r requirements.txt
           python3 main.py
 
-      - name: Create PR
-        id: cpr
-        uses: peter-evans/create-pull-request@v7
+      - name: Commit CSV file
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit-message: "feat: new fees report"
-          title: "New Fees Report"
-          branch: gha-fees-report
-          delete-branch: true
-          labels: "Fees-Report"
+          branch: "collect-fees-cron"
+          file_pattern: "fee_allocator/allocations/current_fees.csv"
+          commit_message: "ci: dump csv file with all current fees"
