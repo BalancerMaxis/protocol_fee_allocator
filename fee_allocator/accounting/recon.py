@@ -167,6 +167,8 @@ def generate_and_save_input_csv(
 
     output = []
     for pool_id, fee_item in fees.items():
+        if mapped_pools_info.get(pool_id) is None:
+            continue
         # Aura incentives
         output.append(
             {
