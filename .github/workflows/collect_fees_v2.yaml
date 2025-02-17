@@ -68,7 +68,7 @@ jobs:
             - [ ] all pools must be a core pool
             - [ ] `total_incentives` + `fees_to_vebal` + `fees_to_dao` == usdc onchain
             - [ ] `aura_incentives` / `total_incentives` ~= aurabal's vebal capture (https://app.aura.finance/#/stats)
-            - [ ] (`earned_fees` + `fees_to_vebal` + `fees_to_dao`) >= total_swept onchain (per chain)
+            - [ ] (`earned_fees` + `fees_to_vebal` + `fees_to_dao`) <= total_swept onchain (per chain)
             - [ ] `fees_to_dao` / (`fees_to_vebal` + `fees_to_dao` + `total_incentives`) == .175
             - [ ] `min(aura_incentives)` > threshold
             - [ ] `min(bal_incentives)` > threshold
