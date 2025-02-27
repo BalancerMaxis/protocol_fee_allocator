@@ -66,7 +66,7 @@ jobs:
           body: |
             Checks before merging:
             - [ ] all pools must be a core pool
-            - [ ] `total_incentives` + `fees_to_vebal` + `fees_to_dao` == usdc onchain
+            - [ ] `total_incentives` + `fees_to_vebal` + `fees_to_dao` == [usdc onchain](https://etherscan.io/token/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48?a=0x7c68c42de679ffb0f16216154c996c354cf1161b)
             - [ ] `aura_incentives` / `total_incentives` ~= aurabal's vebal capture (https://app.aura.finance/#/stats)
             - [ ] (`earned_fees` + `fees_to_vebal` + `fees_to_dao`) <= total_swept onchain (per chain)
             - [ ] `fees_to_dao` / (`fees_to_vebal` + `fees_to_dao` + `total_incentives`) == .175
