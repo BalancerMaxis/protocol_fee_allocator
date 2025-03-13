@@ -72,6 +72,7 @@ jobs:
             - [ ] `fees_to_dao` / (`fees_to_vebal` + `fees_to_dao` + `total_incentives`) == .175
             - [ ] `min(aura_incentives)` > threshold
             - [ ] `min(bal_incentives)` > threshold
+            - [ ] latest [vote round data added](https://github.com/aurafinance/aura-contracts/pulls?q=is%3Apr+is%3Aclosed) by aura team?
           branch: gha-biweekly-fees
           branch-suffix: timestamp
           delete-branch: true
