@@ -73,6 +73,9 @@ jobs:
             - [ ] `min(aura_incentives)` > threshold
             - [ ] `min(bal_incentives)` > threshold
             - [ ] latest [vote round data added](https://github.com/aurafinance/aura-contracts/pulls?q=is%3Apr+is%3Aclosed) by aura team?
+
+            Additional checks:
+            - [ ] paladin quest v2 claimable earnings > $10k? https://quest.paladin.vote/#/claim
           branch: gha-biweekly-fees
           branch-suffix: timestamp
           delete-branch: true
