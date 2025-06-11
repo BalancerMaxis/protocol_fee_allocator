@@ -32,7 +32,7 @@ jobs:
           python3 main.py
 
       - name: Commit CSV file
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v6
         with:
           branch: "collect-fees-cron"
           file_pattern: "fee_allocator/allocations/current_fees.csv"
